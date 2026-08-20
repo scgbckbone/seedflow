@@ -3,167 +3,48 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#0b0b08">
+    <meta name="theme-color" content="#090906">
     <meta
       name="description"
-      content="An interactive, source-linked map of how COLDCARD generates seed words and wallet keys."
+      content="A source-linked technical graph of COLDCARD seed generation."
     >
-    <title>Seedflow — How COLDCARD Generates Wallet Keys</title>
+    <title>COLDCARD seed source map</title>
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="styles.css">
     <script src="app.js" defer></script>
   </head>
   <body>
-    <a class="skip-link" href="#flow">Skip to seed flow</a>
+    <main class="graph-viewport">
+      <svg
+        id="seed-graph"
+        class="seed-graph"
+        viewBox="0 0 1600 900"
+        role="img"
+        aria-labelledby="graph-title graph-description"
+      >
+        <title id="graph-title">COLDCARD seed generation source map</title>
+        <desc id="graph-description">
+          A technical data-flow graph. Every node and edge opens its implementation source.
+        </desc>
+      </svg>
 
-    <div class="page-shell">
-      <header class="site-header">
-        <a class="brand" href="https://coldcard.com" target="_blank" rel="noreferrer">
-          <span class="brand-mark" aria-hidden="true">CC</span>
-          <span>COLDCARD</span>
+      <a
+        id="source-peek"
+        class="source-peek"
+        href="https://github.com/Coldcard/firmware/blob/master/shared/seed.py"
+        target="_blank"
+        rel="noreferrer"
+      >
+        <span id="source-kind">SOURCE</span>
+        <code id="source-path">Coldcard/firmware · shared/seed.py</code>
+        <span aria-hidden="true">↗</span>
+      </a>
+
+      <noscript>
+        <a class="noscript-source" href="https://github.com/Coldcard/firmware/blob/master/shared/seed.py">
+          Coldcard/firmware · shared/seed.py ↗
         </a>
-        <a
-          class="source-pill"
-          href="https://github.com/Coldcard/firmware"
-          target="_blank"
-          rel="noreferrer"
-        >
-          <span class="live-dot" aria-hidden="true"></span>
-          Open firmware
-          <span aria-hidden="true">↗</span>
-        </a>
-      </header>
-
-      <main>
-        <section class="hero" aria-labelledby="page-title">
-          <p class="eyebrow">SEED / ENTROPY / KEY DERIVATION</p>
-          <h1 id="page-title">How a COLDCARD seed becomes wallet keys.</h1>
-          <p class="lede">
-            Follow every source, hash, and standard. Select a node for its exact role.
-            Select any connecting edge to open the implementation or documentation.
-          </p>
-          <div class="hero-meta" aria-label="Visualization features">
-            <span>Three device sources</span>
-            <span>Required user entropy</span>
-            <span>Source-linked edges</span>
-          </div>
-        </section>
-
-        <section id="flow" class="flow-section" aria-labelledby="flow-title">
-          <div class="section-heading">
-            <div>
-              <p class="section-kicker">SIGNAL PATH</p>
-              <h2 id="flow-title">Seed generation flow</h2>
-            </div>
-            <p class="edge-hint"><span aria-hidden="true">↗</span> Every edge is a source link</p>
-          </div>
-
-          <div class="flow-layout">
-            <div class="graph-card">
-              <div class="graph-toolbar" aria-hidden="true">
-                <span>INPUT</span>
-                <span>TRANSFORM</span>
-                <span>OUTPUT</span>
-              </div>
-              <p class="graph-scroll-cue" aria-hidden="true">Swipe to follow the flow <span>→</span></p>
-              <div class="graph-scroll" tabindex="0" aria-label="Scrollable seed generation graph">
-                <svg
-                  id="seed-graph"
-                  class="seed-graph"
-                  viewBox="0 0 1280 1260"
-                  role="img"
-                  aria-labelledby="graph-title graph-description"
-                >
-                  <title id="graph-title">COLDCARD seed generation</title>
-                  <desc id="graph-description">
-                    Device and user entropy sources flow through SHA-256, BIP39, and BIP32
-                    transformations to produce derived wallet keypairs.
-                  </desc>
-                </svg>
-              </div>
-            </div>
-
-            <aside id="detail-panel" class="detail-panel" aria-live="polite">
-              <p id="detail-kind" class="detail-kind">TRANSFORM</p>
-              <h3 id="detail-title">Final entropy mix</h3>
-              <p id="detail-copy">
-                Device entropy and the selected user-entropy digest are combined with
-                explicit domain, purpose, and method bytes, then double-hashed.
-              </p>
-              <pre id="detail-formula" class="detail-formula"><code>SHA256d(context || device || user)</code></pre>
-              <a id="detail-source" class="detail-source" href="#" target="_blank" rel="noreferrer">
-                Open source
-                <span aria-hidden="true">↗</span>
-              </a>
-            </aside>
-          </div>
-        </section>
-
-        <section class="formula-section" aria-labelledby="formula-title">
-          <div class="section-heading formula-heading">
-            <div>
-              <p class="section-kicker">EXACT CONSTRUCTION</p>
-              <h2 id="formula-title">The formula</h2>
-            </div>
-            <button id="copy-formula" class="copy-button" type="button">
-              Copy formula
-            </button>
-          </div>
-          <pre class="formula-block"><code id="formula-code"></code></pre>
-          <p class="formula-note">
-            Mash Keys is based on
-            <a href="https://petertodd.org/2014/push-button-rng" target="_blank" rel="noreferrer">
-              Peter Todd’s Push-Button RNG
-            </a>.
-            The dice and coin workflows are separate constructions.
-          </p>
-        </section>
-
-        <nav class="source-index" aria-label="Primary sources">
-          <span>Follow the code</span>
-          <a href="https://github.com/Coldcard/firmware/blob/master/shared/seed.py" target="_blank" rel="noreferrer">Seed orchestration ↗</a>
-          <a href="https://github.com/Coldcard/firmware/blob/master/shared/numpad.py" target="_blank" rel="noreferrer">Mash timing ↗</a>
-          <a href="https://github.com/switck/libngu/blob/master/ngu/random.c" target="_blank" rel="noreferrer">Hash_DRBG ↗</a>
-          <a href="https://github.com/switck/libngu/blob/master/ngu/bip39.py" target="_blank" rel="noreferrer">BIP39 ↗</a>
-          <a href="https://github.com/switck/libngu/blob/master/ngu/hdnode.c" target="_blank" rel="noreferrer">BIP32 ↗</a>
-        </nav>
-
-        <noscript>
-          <section class="noscript-flow" aria-label="Text seed generation flow">
-            <pre>STM32 TRNG ── SHA-256 Hash_DRBG + fresh STM32 output ── 32 bytes ┐
-                                                                 │
-Secure Element 1 ────────────────────────────────────── 32 bytes ├─ SHA256d
-                                                                 │
-Secure Element 2 ─────────────────────────────────────── 8 bytes ┘
-                                                                       │
-                                                            device entropy
-                                                                       │
-Required user input ── Mash Keys, dice, or coin flips ── SHA-256 digest
-                                                                       │
-                 domain separator + purpose + selected method          │
-                                      │                                │
-                                      └────────────── SHA256d ─────────┘
-                                                       │
-                                              seed entropy
-                                                       │
-                                            12 or 24 BIP39 words
-                                                       │
-                                      words + optional passphrase
-                                                       │
-                                                BIP39 seed
-                                                       │
-                                      BIP32 root and derived keypairs</pre>
-          </section>
-        </noscript>
-      </main>
-
-      <footer class="site-footer">
-        <p>Public code. Explicit inputs. Traceable transformations.</p>
-        <div>
-          <a href="https://coldcard.com/docs/" target="_blank" rel="noreferrer">Documentation ↗</a>
-          <a href="https://github.com/Coldcard/firmware" target="_blank" rel="noreferrer">Firmware ↗</a>
-        </div>
-      </footer>
-    </div>
+      </noscript>
+    </main>
   </body>
 </html>

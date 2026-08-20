@@ -20,38 +20,48 @@ test("page is self-contained and accessible without external scripts", async () 
   const html = await readSource("index.html");
 
   assert.match(html, /^<!doctype html>/i);
+  assert.match(html, /class="graph-viewport"/);
   assert.match(html, /id="seed-graph"/);
   assert.match(html, /aria-labelledby="graph-title graph-description"/);
   assert.match(html, /<noscript>/);
   assert.doesNotMatch(html, /<script[^>]+src=["']https?:/i);
+  assert.doesNotMatch(html, /class="(?:hero|site-header|formula-section|site-footer)"/);
 });
 
-test("formula preserves the audited construction", async () => {
+test("graph exposes the technical construction", async () => {
   const app = await readSource("app.js");
 
   for (const fragment of [
-    "Hash_DRBG_SHA256",
-    "STM32_TRNG(128 bytes)",
-    "SHA256d(SE1_boot[32] || SE2_boot[8])",
-    "drbg.generate(32) XOR STM32_TRNG_fresh[32]",
-    "SHA256d(mcu_random || SE1_fresh[32] || SE2_fresh[8])",
-    "SHA256(\"CC\\\\x01\" || method || encoded_user_events)",
-    "LE32(i) || LE32(timing_delta_i) || U8(key_code_i)",
+    "init = TRNG[128]",
+    "generate[32] XOR TRNG_fresh[32]",
+    "mcu[32] || se1[32]",
+    "CC\\\\x01 || method",
+    "CC\\\\x01S || purpose",
+    "context || device_entropy",
     "PBKDF2-HMAC-SHA512",
-    "HMAC-SHA512"
+    "HMAC-SHA512(\\\"Bitcoin seed\\\""
   ]) {
-    assert.ok(app.includes(fragment), `missing formula fragment: ${fragment}`);
+    assert.ok(app.includes(fragment), `missing graph expression: ${fragment}`);
   }
 });
 
-test("graph edges all resolve to public source or documentation links", async () => {
+test("every graph node and edge links directly to implementation source", async () => {
   const app = await readSource("app.js");
-  const edgeBlock = app.slice(app.indexOf("const EDGES"), app.indexOf("const FORMULA"));
+  const nodeBlock = app.slice(app.indexOf("const NODES"), app.indexOf("const EDGES"));
+  const edgeBlock = app.slice(app.indexOf("const EDGES"), app.indexOf("const graph"));
+  const nodeCount = (nodeBlock.match(/\bid:/g) || []).length;
+  const nodeSourceCount = (nodeBlock.match(/\bsource:/g) || []).length;
   const edgeCount = (edgeBlock.match(/\bfrom:/g) || []).length;
-  const sourceCount = (edgeBlock.match(/\bsource:/g) || []).length;
+  const edgeSourceCount = (edgeBlock.match(/\bsource:/g) || []).length;
 
+  assert.equal(nodeCount, 14);
+  assert.equal(nodeSourceCount, nodeCount);
   assert.equal(edgeCount, 13);
-  assert.equal(sourceCount, edgeCount);
+  assert.equal(edgeSourceCount, edgeCount);
+  assert.doesNotMatch(nodeBlock, /source:\s*SOURCE\.pushButton/);
+  assert.doesNotMatch(edgeBlock, /source:\s*SOURCE\.pushButton/);
+  assert.match(app, /href: node\.source/);
+  assert.match(app, /href: edge\.source/);
   assert.match(app, /https:\/\/petertodd\.org\/2014\/push-button-rng/);
   assert.match(app, /https:\/\/github\.com\/Coldcard\/firmware/);
   assert.match(app, /https:\/\/github\.com\/switck\/libngu/);

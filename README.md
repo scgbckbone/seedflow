@@ -1,11 +1,10 @@
 # Seedflow
 
-An interactive, source-linked visualization of how COLDCARD combines device
+An interactive, source-linked technical graph of how COLDCARD combines device
 randomness, required user entropy, BIP39, and BIP32 to generate wallet keys.
 
-Every edge in the graph opens the relevant firmware source, technical standard,
-or documentation. Selecting a node explains its role and shows the exact input
-or transformation it represents.
+Every node and every edge opens its implementation source. Nodes expose the
+relevant expression, byte width, and repository path directly in the graph.
 
 ## Local development
 
@@ -24,4 +23,3 @@ Pushes to `main` are built, tested, and deployed through GitHub Pages using the
 workflow in `.github/workflows/pages.yml`.
 
 The site has no runtime dependencies, analytics, cookies, or external scripts.
-
