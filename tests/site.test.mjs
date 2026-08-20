@@ -35,8 +35,12 @@ test("graph exposes the technical construction", async () => {
     "init = TRNG[128]",
     "generate[32] XOR TRNG_fresh[32]",
     "mcu[32] || se1[32]",
-    "CC\\\\x01 || method",
-    "CC\\\\x01S || purpose",
+    "gap = ticks_diff(now, last)",
+    "pack('<IIB', count, gap, key)",
+    "D: ASCII 1..6",
+    "C: ASCII 1|0",
+    "b'CC\\\\x01' || method",
+    "b'CC\\\\x01S' || purpose",
     "context || device_entropy",
     "PBKDF2-HMAC-SHA512",
     "HMAC-SHA512(\\\"Bitcoin seed\\\""
@@ -54,9 +58,9 @@ test("every graph node and edge links directly to implementation source", async 
   const edgeCount = (edgeBlock.match(/\bfrom:/g) || []).length;
   const edgeSourceCount = (edgeBlock.match(/\bsource:/g) || []).length;
 
-  assert.equal(nodeCount, 14);
+  assert.equal(nodeCount, 15);
   assert.equal(nodeSourceCount, nodeCount);
-  assert.equal(edgeCount, 13);
+  assert.equal(edgeCount, 14);
   assert.equal(edgeSourceCount, edgeCount);
   assert.doesNotMatch(nodeBlock, /source:\s*SOURCE\.pushButton/);
   assert.doesNotMatch(edgeBlock, /source:\s*SOURCE\.pushButton/);
