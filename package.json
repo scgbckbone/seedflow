@@ -1,0 +1,13 @@
+{
+  "name": "seedflow",
+  "private": true,
+  "description": "Interactive, source-linked visualization of COLDCARD seed generation.",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "serve": "node scripts/serve.mjs",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=20"
+  }
+}
