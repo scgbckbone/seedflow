@@ -33,38 +33,46 @@ test("graph exposes the technical construction", async () => {
 
   for (const fragment of [
     "STM32 TRNG self-test",
-    "rng_selftest() · application startup gate",
-    "8 × rng_get() (discarded)",
-    "rng_get(): RNG->DR · DRDY ≤ 10 ms",
-    "zero / seed error / timeout → EFAULT",
-    "failure → __fatal_error(); UI does not start",
+    "Requires eight successful STM32 TRNG reads;",
+    "all are discarded.",
+    "Without working TRNG access,",
+    "COLDCARD cannot start.",
     "mcu_random[32]",
-    "DRBG init/auto-reseed: 32 × rng_get()",
-    "out = Hash_DRBG-SHA256[32]",
-    "XOR 8 × fresh rng_get()",
-    "zero / repeat / failure → EFAULT",
+    "32-byte Hash_DRBG output XOR fresh",
+    "32-byte STM32 TRNG output",
+    "A failed, zero or repeated TRNG word",
+    "aborts generation",
     "SE entropy → Hash_DRBG reseed",
-    "n[32] = SHA256d(SE1[32] || SE2[8])",
-    "ngu.random.reseed(n)",
-    "→ cf_hash_drbg_sha256_reseed(drbg, n)",
+    "Hash_DRBG.Reseed(",
+    "SHA256d(SE1[32] || SE2[8]))",
     "RUNTIME RNG INITIALIZATION",
     "MASTER-SEED GENERATION",
-    "SE1 startup sample",
-    "SE2 startup sample",
-    "SE1 seed sample",
-    "SE2 seed sample",
+    "Secure Element 1",
+    "Secure Element 2",
+    "Fresh startup entropy",
+    "master-seed generation",
     "SHA256d(mcu_random[32] ||",
-    "65 presses → 64 gaps × 2 credited bits",
-    "key bytes mixed · 0 credited bits",
-    "pack('<IIB', count, Δticks, key)",
-    "Dice Rolls: ≥50 · ASCII 1..6",
-    "Coin Flips: ≥128 · ASCII 1|0",
-    "SHA256(b'CC\\\\x01' || method",
+    "Raw press timing is captured before",
+    "Intervals use CPU-cycle resolution",
+    "(~8.33 ns)",
+    "only intervals receive entropy credit",
+    "Collects ≥50 six-sided die results",
+    "or ≥128 coin-flip results",
+    "Rejects highly biased sequences:",
+    "die face >30% or coin side >65%",
+    "SHA256(b'CC\\\\x01' ||",
+    "selected method ||",
+    "collected events)",
     "b'CC\\\\x01S' || purpose",
     "SHA256d(b'CC\\\\x01S' || purpose",
-    "|| method || device_entropy",
+    "device_entropy[32] || user_entropy[32])",
+    "Optional BIP39 passphrase",
     "PBKDF2-HMAC-SHA512",
-    "HMAC-SHA512(\\\"Bitcoin seed\\\""
+    "password = mnemonic",
+    "salt = \\\"mnemonic\\\" || passphrase",
+    "2048 iterations",
+    "Root = HMAC-SHA512(key = \\\"Bitcoin seed\\\"",
+    "Child keys are derived using the selected BIP32 path"
   ]) {
     assert.ok(app.includes(fragment), `missing graph expression: ${fragment}`);
   }
@@ -89,6 +97,10 @@ test("every graph node and edge links directly to implementation source", async 
   assert.doesNotMatch(edgeBlock, /from: "trngGate"/);
   assert.match(edgeBlock, /from: "se1Reseed", to: "runtimeReseed"/);
   assert.match(edgeBlock, /from: "se2Reseed", to: "runtimeReseed"/);
+  assert.match(edgeBlock, /label: "symbols"/);
+  assert.match(edgeBlock, /label: "passphrase"/);
+  assert.doesNotMatch(edgeBlock, /label: "ASCII"/);
+  assert.doesNotMatch(edgeBlock, /label: "salt"/);
   assert.doesNotMatch(nodeBlock, /id: "context"/);
   assert.doesNotMatch(edgeBlock, /from: "context"/);
   assert.doesNotMatch(edgeBlock, /H 1515/);

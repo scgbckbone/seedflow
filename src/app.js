@@ -67,11 +67,10 @@ const NODES = [
     id: "trngGate", x: 25, y: 40, w: 400, h: 190,
     title: "STM32 TRNG self-test",
     expression: [
-      "rng_selftest() · application startup gate",
-      "8 × rng_get() (discarded)",
-      "rng_get(): RNG->DR · DRDY ≤ 10 ms",
-      "zero / seed error / timeout → EFAULT",
-      "failure → __fatal_error(); UI does not start"
+      "Requires eight successful STM32 TRNG reads;",
+      "all are discarded.",
+      "Without working TRNG access,",
+      "COLDCARD cannot start."
     ],
     expressionSize: 9.8,
     path: "firmware/stm32/COLDCARD_MK4/rng.c:180–210",
@@ -99,10 +98,10 @@ const NODES = [
     id: "mcuRandom", x: 720, y: 345, w: 365, h: 145,
     title: "mcu_random[32]",
     expression: [
-      "DRBG init/auto-reseed: 32 × rng_get()",
-      "out = Hash_DRBG-SHA256[32]",
-      "      XOR 8 × fresh rng_get()",
-      "zero / repeat / failure → EFAULT"
+      "32-byte Hash_DRBG output XOR fresh",
+      "32-byte STM32 TRNG output",
+      "A failed, zero or repeated TRNG word",
+      "aborts generation"
     ],
     expressionSize: 10.1,
     path: "libngu/ngu/random.c:20–93",
@@ -120,8 +119,8 @@ const NODES = [
   },
   {
     id: "se1", x: 400, y: 350, w: 270, h: 110,
-    title: "SE1 seed sample",
-    expression: "authenticated_random[32]",
+    title: "Secure Element 1",
+    expression: ["Fresh entropy for", "master-seed generation"],
     path: "firmware/ae.c:694–714",
     tone: "hardware", source: SOURCE.secureElement1,
     links: [
@@ -137,8 +136,8 @@ const NODES = [
   },
   {
     id: "se2", x: 400, y: 485, w: 270, h: 110,
-    title: "SE2 seed sample",
-    expression: "authenticated_random[8]",
+    title: "Secure Element 2",
+    expression: ["Fresh entropy for", "master-seed generation"],
     path: "firmware/se2.c:1331–1347",
     tone: "hardware", source: SOURCE.secureElement2,
     links: [
@@ -156,9 +155,8 @@ const NODES = [
     id: "runtimeReseed", x: 800, y: 90, w: 365, h: 145,
     title: "SE entropy → Hash_DRBG reseed",
     expression: [
-      "n[32] = SHA256d(SE1[32] || SE2[8])",
-      "ngu.random.reseed(n)",
-      "→ cf_hash_drbg_sha256_reseed(drbg, n)"
+      "Hash_DRBG.Reseed(",
+      "  SHA256d(SE1[32] || SE2[8]))"
     ],
     expressionSize: 10.1,
     path: "firmware/shared/mk4.py:39–50",
@@ -176,8 +174,8 @@ const NODES = [
   },
   {
     id: "se1Reseed", x: 475, y: 40, w: 270, h: 110,
-    title: "SE1 startup sample",
-    expression: "authenticated_random[32]",
+    title: "Secure Element 1",
+    expression: "Fresh startup entropy",
     path: "firmware/ae.c:694–714",
     tone: "hardware", source: SOURCE.secureElement1,
     links: [
@@ -193,8 +191,8 @@ const NODES = [
   },
   {
     id: "se2Reseed", x: 475, y: 175, w: 270, h: 110,
-    title: "SE2 startup sample",
-    expression: "authenticated_random[8]",
+    title: "Secure Element 2",
+    expression: "Fresh startup entropy",
     path: "firmware/se2.c:1331–1347",
     tone: "hardware", source: SOURCE.secureElement2,
     links: [
@@ -216,12 +214,15 @@ const NODES = [
     tone: "process", source: SOURCE.deviceEntropy
   },
   {
-    id: "mash", x: 25, y: 350, w: 280, h: 145,
+    id: "mash", x: 25, y: 350, w: 280, h: 160,
     title: "Mash Keys",
     expression: [
-      "65 presses → 64 gaps × 2 credited bits",
-      "key bytes mixed · 0 credited bits",
-      "pack('<IIB', count, Δticks, key)"
+      "Raw press timing is captured before",
+      "keypad debounce",
+      "Intervals use CPU-cycle resolution",
+      "(~8.33 ns)",
+      "Intervals and key values are mixed;",
+      "only intervals receive entropy credit"
     ],
     expressionSize: 10.1,
     path: "firmware/shared/seed.py:730–790",
@@ -245,9 +246,10 @@ const NODES = [
     id: "symbols", x: 25, y: 520, w: 280, h: 130,
     title: "Dice Rolls / Coin Flips",
     expression: [
-      "Dice Rolls: ≥50 · ASCII 1..6",
-      "Coin Flips: ≥128 · ASCII 1|0",
-      "max frequency: dice 30% · coin 65%"
+      "Collects ≥50 six-sided die results",
+      "or ≥128 coin-flip results",
+      "Rejects highly biased sequences:",
+      "die face >30% or coin side >65%"
     ],
     expressionSize: 10.1,
     path: "firmware/shared/seed.py:672–728",
@@ -262,7 +264,12 @@ const NODES = [
   {
     id: "userHash", x: 400, y: 700, w: 230, h: 100,
     title: "user_entropy[32]",
-    expression: ["SHA256(b'CC\\x01' || method", "|| encoded_events)"],
+    expression: [
+      "SHA256(b'CC\\x01' ||",
+      "selected method ||",
+      "collected events)"
+    ],
+    expressionSize: 10.1,
     path: "firmware/shared/seed.py:688–790",
     tone: "process", source: SOURCE.userEntropy
   },
@@ -271,9 +278,10 @@ const NODES = [
     title: "seed_entropy[32]",
     expression: [
       "SHA256d(b'CC\\x01S' || purpose",
-      "|| method || device_entropy",
-      "|| user_entropy)"
+      "|| selected method ||",
+      "device_entropy[32] || user_entropy[32])"
     ],
+    expressionSize: 10.1,
     path: "firmware/shared/seed.py:792–837",
     tone: "process", source: SOURCE.seedMix
   },
@@ -285,23 +293,34 @@ const NODES = [
     tone: "standard", source: SOURCE.bip39Words
   },
   {
-    id: "passphrase", x: 1050, y: 690, w: 245, h: 90,
-    title: "BIP39 passphrase",
-    expression: "salt = mnemonic || passphrase",
+    id: "passphrase", x: 925, y: 690, w: 305, h: 90,
+    title: "Optional BIP39 passphrase",
+    expression: [],
     path: "libngu/ngu/bip39.py:443–451",
     tone: "human", source: SOURCE.bip39Seed
   },
   {
-    id: "bip39", x: 1350, y: 690, w: 205, h: 90,
+    id: "bip39", x: 1325, y: 690, w: 250, h: 100,
     title: "BIP39 seed[64]",
-    expression: "PBKDF2-HMAC-SHA512 · 2048",
+    expression: [
+      "PBKDF2-HMAC-SHA512",
+      "password = mnemonic",
+      "salt = \"mnemonic\" || passphrase",
+      "2048 iterations"
+    ],
+    expressionSize: 10.1,
     path: "libngu/ngu/bip39.py:443–451",
     tone: "standard", source: SOURCE.bip39Seed
   },
   {
-    id: "bip32", x: 1325, y: 805, w: 250, h: 90,
+    id: "bip32", x: 1200, y: 810, w: 375, h: 85,
     title: "BIP32 root + children",
-    expression: ["HMAC-SHA512(\"Bitcoin seed\",", "bip39_seed) → derive(path)"],
+    expression: [
+      "Root = HMAC-SHA512(key = \"Bitcoin seed\",",
+      "                    data = BIP39 seed)",
+      "Child keys are derived using the selected BIP32 path"
+    ],
+    expressionSize: 10.1,
     path: "libngu/ngu/hdnode.c:359–554",
     tone: "result", source: SOURCE.bip32Children
   }
@@ -316,12 +335,12 @@ const EDGES = [
   { from: "se2", to: "device", fromPort: "right", toPort: "left", label: "8 B", labelX: 695, labelY: 530, source: SOURCE.secureElement2, path: "firmware/se2.c:1331–1347" },
   { from: "device", to: "mix", fromPort: "bottom", toPort: "top", label: "device_entropy[32]", labelX: 920, labelY: 650, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837" },
   { from: "mash", to: "userHash", fromPort: "right", toPort: "left", label: "timing", labelX: 347, labelY: 510, source: SOURCE.mashEntropy, path: "firmware/shared/seed.py:730–790" },
-  { from: "symbols", to: "userHash", fromPort: "right", toPort: "left", label: "ASCII", labelX: 347, labelY: 658, source: SOURCE.symbolEntropy, path: "firmware/shared/seed.py:672–728" },
-  { from: "userHash", to: "mix", fromPort: "right", toPort: "left", label: "user_entropy[32]", labelX: 815, labelY: 770, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837", route: "M 630 750 H 980 Q 1005 750 1005 725 V 650 Q 1005 625 1025 625" },
+  { from: "symbols", to: "userHash", fromPort: "right", toPort: "left", label: "symbols", labelX: 347, labelY: 658, source: SOURCE.symbolEntropy, path: "firmware/shared/seed.py:672–728" },
+  { from: "userHash", to: "mix", fromPort: "right", toPort: "left", label: "user_entropy[32]", labelX: 815, labelY: 770, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837", route: "M 630 750 H 880 Q 905 750 905 725 V 650 Q 905 625 1025 625" },
   { from: "mix", to: "words", fromPort: "right", toPort: "left", label: "16|32 B", labelX: 1310, labelY: 553, source: SOURCE.seedWords, path: "firmware/shared/seed.py:887–898" },
   { from: "words", to: "bip39", fromPort: "bottom", toPort: "top", label: "mnemonic", labelX: 1450, labelY: 678, source: SOURCE.bip39Seed, path: "libngu/ngu/bip39.py:443–451" },
-  { from: "passphrase", to: "bip39", fromPort: "right", toPort: "left", label: "salt", labelX: 1323, labelY: 735, source: SOURCE.bip39Seed, path: "libngu/ngu/bip39.py:443–451" },
-  { from: "bip39", to: "bip32", fromPort: "bottom", toPort: "top", label: "64 B", labelX: 1450, labelY: 792, source: SOURCE.bip32, path: "libngu/ngu/hdnode.c:359–386" }
+  { from: "passphrase", to: "bip39", fromPort: "right", toPort: "left", label: "passphrase", labelX: 1278, labelY: 735, source: SOURCE.bip39Seed, path: "libngu/ngu/bip39.py:443–451" },
+  { from: "bip39", to: "bip32", fromPort: "bottom", toPort: "top", label: "64 B", labelX: 1430, labelY: 800, source: SOURCE.bip32, path: "libngu/ngu/hdnode.c:359–386" }
 ];
 
 const graph = document.querySelector("#seed-graph");

@@ -313,6 +313,13 @@ body {
   }
 }
 
+@media (min-width: 721px) {
+  .source-peek {
+    top: 14px;
+    bottom: auto;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     transition-duration: 0.01ms !important;
