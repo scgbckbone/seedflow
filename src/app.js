@@ -3,9 +3,10 @@ const SVG_NS = "http://www.w3.org/2000/svg";
 const SOURCE = Object.freeze({
   seedMix: "https://github.com/Coldcard/firmware/blob/master/shared/seed.py#L792-L837",
   deviceEntropy: "https://github.com/Coldcard/firmware/blob/master/shared/seed.py#L646-L659",
-  userEntropy: "https://github.com/Coldcard/firmware/blob/master/shared/seed.py#L688-L790",
   symbolEntropy: "https://github.com/Coldcard/firmware/blob/master/shared/seed.py#L672-L728",
+  symbolDigest: "https://github.com/Coldcard/firmware/blob/master/shared/seed.py#L688-L728",
   mashEntropy: "https://github.com/Coldcard/firmware/blob/master/shared/seed.py#L730-L790",
+  mashDigest: "https://github.com/Coldcard/firmware/blob/master/shared/seed.py#L741-L790",
   mashTiming: "https://github.com/Coldcard/firmware/blob/master/shared/numpad.py#L61-L87",
   rngHardware: "https://github.com/Coldcard/firmware/blob/master/stm32/COLDCARD_MK4/rng.c#L105-L167",
   rngSelftest: "https://github.com/Coldcard/firmware/blob/master/stm32/COLDCARD_MK4/rng.c#L180-L210",
@@ -258,16 +259,28 @@ const NODES = [
     ]
   },
   {
-    id: "userHash", x: 400, y: 700, w: 230, h: 100,
-    title: "user_entropy[32]",
+    id: "mashDigest", x: 400, y: 625, w: 340, h: 120,
+    title: "Mash digest[32]",
     expression: [
-      "SHA256(b'CC\\x01' ||",
-      "selected method ||",
-      "collected events)"
+      "event = LE32(index) || LE32(cycle interval)",
+      "        || key byte",
+      "SHA256(b'CC\\x01' || METHOD_MASH || event...)"
     ],
-    expressionSize: 10.1,
-    path: "firmware/shared/seed.py:688–790",
-    tone: "process", source: SOURCE.userEntropy
+    expressionSize: 9.6,
+    path: "firmware/shared/seed.py:741–790",
+    tone: "process", source: SOURCE.mashDigest
+  },
+  {
+    id: "symbolDigest", x: 400, y: 770, w: 340, h: 120,
+    title: "Dice / Coin digest[32]",
+    expression: [
+      "SHA256(b'CC\\x01' || METHOD_DICE || ASCII rolls...)",
+      "or",
+      "SHA256(b'CC\\x01' || METHOD_COIN || ASCII flips...)"
+    ],
+    expressionSize: 9.6,
+    path: "firmware/shared/seed.py:688–728",
+    tone: "process", source: SOURCE.symbolDigest
   },
   {
     id: "mix", x: 1025, y: 570, w: 270, h: 110,
@@ -275,7 +288,7 @@ const NODES = [
     expression: [
       "SHA256d(b'CC\\x01S' || purpose",
       "|| selected method ||",
-      "device_entropy[32] || user_entropy[32])"
+      "device_entropy[32] || selected digest[32])"
     ],
     expressionSize: 10.1,
     path: "firmware/shared/seed.py:792–837",
@@ -289,7 +302,7 @@ const NODES = [
     tone: "standard", source: SOURCE.bip39Words
   },
   {
-    id: "passphrase", x: 925, y: 690, w: 305, h: 90,
+    id: "passphrase", x: 925, y: 720, w: 305, h: 70,
     title: "Optional BIP39 passphrase",
     expression: [],
     path: "libngu/ngu/bip39.py:443–451",
@@ -329,10 +342,11 @@ const EDGES = [
   { from: "mcuRandom", to: "device", fromPort: "bottom", toPort: "top", label: "mcu_random[32]", labelX: 965, labelY: 505, source: SOURCE.deviceEntropy, path: "firmware/shared/seed.py:646–659" },
   { from: "se1", to: "device", fromPort: "right", toPort: "left", label: "32 B", labelX: 695, labelY: 445, source: SOURCE.secureElement1, path: "firmware/ae.c:694–714" },
   { from: "se2", to: "device", fromPort: "right", toPort: "left", label: "8 B", labelX: 695, labelY: 530, source: SOURCE.secureElement2, path: "firmware/se2.c:1331–1347" },
-  { from: "device", to: "mix", fromPort: "bottom", toPort: "top", label: "device_entropy[32]", labelX: 920, labelY: 650, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837" },
-  { from: "mash", to: "userHash", fromPort: "right", toPort: "left", label: "timing", labelX: 347, labelY: 510, source: SOURCE.mashEntropy, path: "firmware/shared/seed.py:730–790" },
-  { from: "symbols", to: "userHash", fromPort: "right", toPort: "left", label: "symbols", labelX: 347, labelY: 658, source: SOURCE.symbolEntropy, path: "firmware/shared/seed.py:672–728" },
-  { from: "userHash", to: "mix", fromPort: "right", toPort: "left", label: "user_entropy[32]", labelX: 815, labelY: 770, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837", route: "M 630 750 H 880 Q 905 750 905 725 V 650 Q 905 625 1025 625" },
+  { from: "device", to: "mix", fromPort: "right", toPort: "top", label: "device_entropy[32]", labelX: 1090, labelY: 535, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837", route: "M 990 570 H 1005 Q 1020 570 1020 555 V 545 H 1140 Q 1160 545 1160 565 V 570" },
+  { from: "mash", to: "mashDigest", fromPort: "right", toPort: "left", label: "packed events", labelX: 345, labelY: 675, source: SOURCE.mashDigest, path: "firmware/shared/seed.py:741–790", route: "M 305 430 H 380 V 685 H 400" },
+  { from: "symbols", to: "symbolDigest", fromPort: "right", toPort: "left", label: "ASCII results", labelX: 345, labelY: 750, source: SOURCE.symbolDigest, path: "firmware/shared/seed.py:688–728", route: "M 305 585 H 345 V 830 H 400" },
+  { from: "mashDigest", to: "mix", fromPort: "right", toPort: "left", label: "if Mash selected", labelX: 875, labelY: 670, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837", route: "M 740 685 C 840 685 910 650 1025 650" },
+  { from: "symbolDigest", to: "mix", fromPort: "right", toPort: "bottom", label: "if Dice/Coin selected", labelX: 900, labelY: 700, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837", route: "M 740 830 H 760 Q 780 830 780 810 V 720 Q 780 700 800 700 H 1140 Q 1160 700 1160 680" },
   { from: "mix", to: "words", fromPort: "right", toPort: "left", label: "16|32 B", labelX: 1310, labelY: 553, source: SOURCE.seedWords, path: "firmware/shared/seed.py:887–898" },
   { from: "words", to: "bip39", fromPort: "bottom", toPort: "top", label: "mnemonic", labelX: 1450, labelY: 678, source: SOURCE.bip39Seed, path: "libngu/ngu/bip39.py:443–451" },
   { from: "passphrase", to: "bip39", fromPort: "right", toPort: "left", label: "passphrase", labelX: 1278, labelY: 735, source: SOURCE.bip39Seed, path: "libngu/ngu/bip39.py:443–451" },

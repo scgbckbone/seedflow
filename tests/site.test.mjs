@@ -60,12 +60,17 @@ test("graph exposes the technical construction", async () => {
     "or ≥128 coin-flip results",
     "Rejects highly biased sequences:",
     "die face >30% or coin side >65%",
-    "SHA256(b'CC\\\\x01' ||",
+    "Mash digest[32]",
+    "event = LE32(index) || LE32(cycle interval)",
+    "|| key byte",
+    "METHOD_MASH || event...)",
+    "Dice / Coin digest[32]",
+    "METHOD_DICE || ASCII rolls...)",
+    "METHOD_COIN || ASCII flips...)",
     "selected method ||",
-    "collected events)",
     "b'CC\\\\x01S' || purpose",
     "SHA256d(b'CC\\\\x01S' || purpose",
-    "device_entropy[32] || user_entropy[32])",
+    "device_entropy[32] || selected digest[32])",
     "Optional BIP39 passphrase",
     "PBKDF2-HMAC-SHA512",
     "password = mnemonic",
@@ -87,9 +92,9 @@ test("every graph node and edge links directly to implementation source", async 
   const edgeCount = (edgeBlock.match(/\bfrom:/g) || []).length;
   const edgeSourceCount = (edgeBlock.match(/\bsource:/g) || []).length;
 
-  assert.equal(nodeCount, 16);
+  assert.equal(nodeCount, 17);
   assert.equal(nodeSourceCount, nodeCount);
-  assert.equal(edgeCount, 14);
+  assert.equal(edgeCount, 15);
   assert.equal(edgeSourceCount, edgeCount);
   assert.equal((nodeBlock.match(/id: "se1(?:Reseed)?"/g) || []).length, 2);
   assert.equal((nodeBlock.match(/id: "se2(?:Reseed)?"/g) || []).length, 2);
@@ -97,11 +102,17 @@ test("every graph node and edge links directly to implementation source", async 
   assert.doesNotMatch(edgeBlock, /from: "trngGate"/);
   assert.match(edgeBlock, /from: "se1Reseed", to: "runtimeReseed"/);
   assert.match(edgeBlock, /from: "se2Reseed", to: "runtimeReseed"/);
-  assert.match(edgeBlock, /label: "symbols"/);
+  assert.match(edgeBlock, /label: "packed events"/);
+  assert.match(edgeBlock, /label: "ASCII results"/);
+  assert.match(edgeBlock, /label: "if Mash selected"/);
+  assert.match(edgeBlock, /label: "if Dice\/Coin selected"/);
   assert.match(edgeBlock, /label: "passphrase"/);
   assert.doesNotMatch(edgeBlock, /label: "ASCII"/);
   assert.doesNotMatch(edgeBlock, /label: "salt"/);
   assert.doesNotMatch(nodeBlock, /id: "context"/);
+  assert.doesNotMatch(nodeBlock, /id: "userHash"/);
+  assert.doesNotMatch(nodeBlock, /user_entropy\[32\]/);
+  assert.doesNotMatch(app, /userEntropy/);
   assert.doesNotMatch(edgeBlock, /from: "context"/);
   assert.doesNotMatch(edgeBlock, /H 1515/);
   assert.doesNotMatch(edgeBlock, /label:\s*"SHA256d?"/);
@@ -126,6 +137,8 @@ test("every graph node and edge links directly to implementation source", async 
   assert.match(app, /shared\/main\.py#L52-L60/);
   assert.match(app, /random\.c#L159-L171/);
   assert.match(app, /shared\/numpad\.py#L61-L87/);
+  assert.match(app, /shared\/seed\.py#L688-L728/);
+  assert.match(app, /shared\/seed\.py#L741-L790/);
   assert.match(app, /COLDCARD_MK4\/rng\.c#L180-L210/);
   assert.match(app, /COLDCARD_MK4\/rng\.c#L105-L167/);
   assert.match(app, /COLDCARD_MK4\/modckcc\.c#L282-L288/);
