@@ -531,14 +531,6 @@ function renderNode(node) {
   });
   link.append(expression);
 
-  const pathText = svgElement("text", {
-    x: node.x + 17,
-    y: node.y + node.h - (node.links ? 39 : 13),
-    class: "node-path"
-  });
-  pathText.textContent = node.path;
-  link.append(pathText);
-
   link.addEventListener("pointerenter", () => setSourcePeek("NODE", node.path, node.source));
   link.addEventListener("focus", () => setSourcePeek("NODE", node.path, node.source));
   graph.append(link);

@@ -99,6 +99,7 @@ test("every graph node and edge links directly to implementation source", async 
   assert.match(app, /href: node\.source/);
   assert.match(app, /href: edge\.source/);
   assert.match(app, /href: lane\.source/);
+  assert.doesNotMatch(app, /class: "node-path"/);
   assert.match(app, /https:\/\/petertodd\.org\/2014\/push-button-rng/);
   assert.match(app, /https:\/\/coldcard\.com\/docs\/master-seed\/#create-a-new-master-seed/);
   assert.match(app, /dispatch\.c#L597-L602/);
