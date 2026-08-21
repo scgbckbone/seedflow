@@ -136,7 +136,7 @@ test("every graph node and edge links directly to implementation source", async 
   assert.match(app, /label: "CALL SITE"/);
   assert.match(app, /label: "BOARD HOOK"/);
   assert.match(app, /label: "MPY INIT"/);
-  assert.match(app, /label: "RNG_GET IMPL"/);
+  assert.equal((app.match(/label: "RNG_GET IMPL"/g) || []).length, 1);
   assert.match(app, /label: "TRNG ADAPTER"/);
   assert.match(app, /label: "SEED CALL"/);
   assert.match(app, /label: "RESEED CALL"/);

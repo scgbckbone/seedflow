@@ -77,10 +77,6 @@ const NODES = [
     tone: "guard", source: SOURCE.rngSelftest,
     links: [
       {
-        label: "RNG_GET IMPL", width: 90, href: SOURCE.rngHardware,
-        kind: "SOURCE", path: "firmware/rng.c:105–167"
-      },
-      {
         label: "CALL SITE", width: 70, href: SOURCE.rngSelftestCall,
         kind: "SOURCE", path: "firmware/modckcc.c:282–288"
       },
