@@ -101,7 +101,6 @@ body {
 }
 
 .flow-node,
-.edge-link,
 .node-chip,
 .lane-link {
   outline: none;
@@ -203,61 +202,10 @@ body {
   stroke: #696953;
   stroke-width: 2;
   vector-effect: non-scaling-stroke;
-  transition: stroke 120ms ease, stroke-width 120ms ease, filter 120ms ease;
 }
 
-.flow-edge.is-control {
-  stroke: #ff6868;
-  stroke-dasharray: 6 6;
-}
-
-.control-link .edge-label rect {
-  stroke: #8c4a4a;
-}
-
-.control-link .edge-label text {
-  fill: #ff9494;
-}
-
-.edge-hit {
-  fill: none;
-  stroke: transparent;
-  stroke-width: 20;
-  vector-effect: non-scaling-stroke;
-}
-
-.edge-link {
-  cursor: alias;
-}
-
-.edge-link:hover .flow-edge,
-.edge-link:focus .flow-edge {
-  stroke: var(--yellow);
-  stroke-width: 3;
-  filter: drop-shadow(0 0 5px rgb(255 204 0 / 55%));
-}
-
-.edge-label rect {
-  fill: #0f0f0b;
-  stroke: #343429;
-  vector-effect: non-scaling-stroke;
-}
-
-.edge-label text {
-  fill: var(--muted);
-  font-family: var(--mono);
-  font-size: 11.2px;
+.edge-group {
   pointer-events: none;
-}
-
-.edge-link:hover .edge-label rect,
-.edge-link:focus .edge-label rect {
-  stroke: var(--yellow);
-}
-
-.edge-link:hover .edge-label text,
-.edge-link:focus .edge-label text {
-  fill: var(--yellow-soft);
 }
 
 .node-chip {

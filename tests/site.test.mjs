@@ -51,21 +51,24 @@ test("graph exposes the technical construction", async () => {
     "Secure Element 2",
     "Fresh startup entropy",
     "master-seed generation",
-    "SHA256d(mcu_random[32] ||",
+    "mcu_random[32] ||",
     "≥65 presses; raw timing before debounce",
     "CPU-cycle intervals (~8.33 ns)",
-    "event = LE32(index) || LE32(cycle gap)",
-    "|| key byte",
-    "METHOD_MASH || event...)",
+    "event = LE32(index) ||",
+    "LE32(cycle gap) || key byte",
+    "digest[32] = SHA256(",
+    "b'CC\\\\x01' || METHOD_MASH ||",
+    "event...)",
     "Only cycle gaps receive entropy credit",
     "≥50 die rolls or ≥128 coin flips",
     "method = METHOD_DICE or METHOD_COIN",
-    "method || ASCII results...)",
+    "b'CC\\\\x01' || method ||",
+    "ASCII results...)",
     "Reject face >30% or side >65%",
     "selected method ||",
-    "b'CC\\\\x01S' || purpose",
-    "SHA256d(b'CC\\\\x01S' || purpose",
-    "device_entropy[32] || selected digest[32])",
+    "b'CC\\\\x01S' || purpose ||",
+    "device_entropy[32] ||",
+    "selected digest[32])",
     "BIP39 mnemonic",
     "16 B → 12 words · 32 B → 24 words"
   ]) {
@@ -73,30 +76,26 @@ test("graph exposes the technical construction", async () => {
   }
 });
 
-test("every graph node and edge links directly to implementation source", async () => {
+test("nodes link to source while edges remain purely visual", async () => {
   const app = await readSource("app.js");
   const nodeBlock = app.slice(app.indexOf("const NODES"), app.indexOf("const EDGES"));
   const edgeBlock = app.slice(app.indexOf("const EDGES"), app.indexOf("const graph"));
   const nodeCount = (nodeBlock.match(/\bid:/g) || []).length;
   const nodeSourceCount = (nodeBlock.match(/\bsource:/g) || []).length;
   const edgeCount = (edgeBlock.match(/\bfrom:/g) || []).length;
-  const edgeSourceCount = (edgeBlock.match(/\bsource:/g) || []).length;
 
   assert.equal(nodeCount, 12);
   assert.equal(nodeSourceCount, nodeCount);
   assert.equal(edgeCount, 10);
-  assert.equal(edgeSourceCount, edgeCount);
   assert.equal((nodeBlock.match(/id: "se1(?:Reseed)?"/g) || []).length, 2);
   assert.equal((nodeBlock.match(/id: "se2(?:Reseed)?"/g) || []).length, 2);
   assert.doesNotMatch(nodeBlock, /id: "trng"/);
   assert.doesNotMatch(edgeBlock, /from: "trngGate"/);
   assert.match(edgeBlock, /from: "se1Reseed", to: "runtimeReseed"/);
   assert.match(edgeBlock, /from: "se2Reseed", to: "runtimeReseed"/);
-  assert.match(edgeBlock, /label: "if Mash selected"/);
-  assert.match(edgeBlock, /label: "if Dice\/Coin selected"/);
-  assert.doesNotMatch(edgeBlock, /label: "passphrase"/);
-  assert.doesNotMatch(edgeBlock, /label: "ASCII"/);
-  assert.doesNotMatch(edgeBlock, /label: "salt"/);
+  assert.doesNotMatch(edgeBlock, /\blabel:/);
+  assert.doesNotMatch(edgeBlock, /\bsource:/);
+  assert.doesNotMatch(edgeBlock, /\bpath:/);
   assert.doesNotMatch(nodeBlock, /id: "context"/);
   assert.doesNotMatch(nodeBlock, /id: "userHash"/);
   assert.doesNotMatch(nodeBlock, /id: "mashDigest"/);
@@ -109,13 +108,14 @@ test("every graph node and edge links directly to implementation source", async 
   assert.doesNotMatch(app, /const PHASES/);
   assert.doesNotMatch(edgeBlock, /from: "context"/);
   assert.doesNotMatch(edgeBlock, /H 1515/);
-  assert.doesNotMatch(edgeBlock, /label:\s*"SHA256d?"/);
   assert.doesNotMatch(edgeBlock, /control:\s*true/);
   assert.doesNotMatch(nodeBlock, /source:\s*SOURCE\.pushButton/);
-  assert.doesNotMatch(edgeBlock, /source:\s*SOURCE\.pushButton/);
   assert.match(app, /href: node\.source/);
-  assert.match(app, /href: edge\.source/);
+  assert.doesNotMatch(app, /href: edge\.source/);
   assert.match(app, /href: lane\.source/);
+  assert.match(app, /class: "edge-group"/);
+  assert.doesNotMatch(app, /class: "edge-link/);
+  assert.doesNotMatch(app, /class: "edge-label"/);
   assert.doesNotMatch(app, /class: "node-path"/);
   assert.match(app, /https:\/\/petertodd\.org\/2014\/push-button-rng/);
   assert.match(app, /https:\/\/coldcard\.com\/docs\/master-seed\/#create-a-new-master-seed/);

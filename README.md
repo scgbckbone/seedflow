@@ -3,7 +3,7 @@
 An interactive, source-linked technical graph of how COLDCARD combines device
 randomness, required user entropy, BIP39, and BIP32 to generate wallet keys.
 
-Every node and every edge opens its implementation source. Nodes expose the
+Every node opens its implementation source. Nodes expose the
 relevant expression, byte width, and repository path directly in the graph.
 
 ## Local development

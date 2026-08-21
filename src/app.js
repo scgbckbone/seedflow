@@ -24,7 +24,6 @@ const SOURCE = Object.freeze({
   runtimeReseed: "https://github.com/Coldcard/firmware/blob/master/shared/mk4.py#L39-L50",
   runtimeReseedCall: "https://github.com/Coldcard/firmware/blob/master/shared/main.py#L52-L60",
   randomReseed: "https://github.com/switck/libngu/blob/master/ngu/random.c#L159-L171",
-  seedWords: "https://github.com/Coldcard/firmware/blob/master/shared/seed.py#L887-L898",
   bip39Words: "https://github.com/switck/libngu/blob/master/ngu/bip39.py#L318-L344",
   pushButton: "https://petertodd.org/2014/push-button-rng",
   masterSeedDocs: "https://coldcard.com/docs/master-seed/#create-a-new-master-seed"
@@ -148,7 +147,7 @@ const NODES = [
     title: "SE entropy → Hash_DRBG reseed",
     expression: [
       "Hash_DRBG.Reseed(",
-      "  SHA256d(SE1[32] || SE2[8]))"
+      "    SHA256d(SE1[32] || SE2[8]))"
     ],
     expressionSize: 10.1,
     path: "firmware/shared/mk4.py:39–50",
@@ -201,7 +200,12 @@ const NODES = [
   {
     id: "device", x: 500, y: 380, w: 280, h: 100,
     title: "device_entropy[32]",
-    expression: ["SHA256d(mcu_random[32] ||", "SE1[32] || SE2[8])"],
+    expression: [
+      "SHA256d(",
+      "    mcu_random[32] ||",
+      "    SE1[32] ||",
+      "    SE2[8])"
+    ],
     path: "firmware/shared/seed.py:646–659",
     tone: "process", source: SOURCE.deviceEntropy
   },
@@ -211,10 +215,11 @@ const NODES = [
     expression: [
       "≥65 presses; raw timing before debounce",
       "CPU-cycle intervals (~8.33 ns)",
-      "event = LE32(index) || LE32(cycle gap)",
-      "        || key byte",
-      "digest[32] = SHA256(b'CC\\x01' ||",
-      "  METHOD_MASH || event...)",
+      "event = LE32(index) ||",
+      "        LE32(cycle gap) || key byte",
+      "digest[32] = SHA256(",
+      "    b'CC\\x01' || METHOD_MASH ||",
+      "    event...)",
       "Only cycle gaps receive entropy credit"
     ],
     expressionSize: 10.1,
@@ -236,13 +241,14 @@ const NODES = [
     ]
   },
   {
-    id: "symbols", x: 500, y: 710, w: 280, h: 145,
+    id: "symbols", x: 500, y: 710, w: 280, h: 165,
     title: "Dice Rolls / Coin Flips",
     expression: [
       "≥50 die rolls or ≥128 coin flips",
       "method = METHOD_DICE or METHOD_COIN",
-      "digest[32] = SHA256(b'CC\\x01' ||",
-      "  method || ASCII results...)",
+      "digest[32] = SHA256(",
+      "    b'CC\\x01' || method ||",
+      "    ASCII results...)",
       "Reject face >30% or side >65%"
     ],
     expressionSize: 10.1,
@@ -256,12 +262,14 @@ const NODES = [
     ]
   },
   {
-    id: "mix", x: 900, y: 550, w: 270, h: 110,
+    id: "mix", x: 900, y: 535, w: 320, h: 145,
     title: "seed_entropy[32]",
     expression: [
-      "SHA256d(b'CC\\x01S' || purpose",
-      "|| selected method ||",
-      "device_entropy[32] || selected digest[32])"
+      "SHA256d(",
+      "    b'CC\\x01S' || purpose ||",
+      "    selected method ||",
+      "    device_entropy[32] ||",
+      "    selected digest[32])"
     ],
     expressionSize: 10.1,
     path: "firmware/shared/seed.py:792–837",
@@ -277,16 +285,16 @@ const NODES = [
 ];
 
 const EDGES = [
-  { from: "se1Reseed", to: "runtimeReseed", fromPort: "right", toPort: "left", label: "32 B", labelX: 772, labelY: 80, source: SOURCE.secureElement1ReseedCall, path: "firmware/shared/mk4.py:43" },
-  { from: "se2Reseed", to: "runtimeReseed", fromPort: "right", toPort: "left", label: "8 B", labelX: 772, labelY: 248, source: SOURCE.secureElement2ReseedCall, path: "firmware/shared/mk4.py:44" },
-  { from: "runtimeReseed", to: "mcuRandom", fromPort: "bottom", toPort: "top", label: "reseeded state", labelX: 800, labelY: 298, source: SOURCE.randomReseed, path: "libngu/ngu/random.c:159–171", route: "M 982.5 235 V 305 H 470 V 380 H 175 V 400" },
-  { from: "mcuRandom", to: "device", fromPort: "right", toPort: "left", label: "mcu_random[32]", labelX: 410, labelY: 500, source: SOURCE.deviceEntropy, path: "firmware/shared/seed.py:646–659", route: "M 325 472.5 C 400 472.5 425 405 500 405" },
-  { from: "se1", to: "device", fromPort: "right", toPort: "left", label: "32 B", labelX: 410, labelY: 545, source: SOURCE.secureElement1, path: "firmware/ae.c:694–714", route: "M 295 615 C 390 615 405 430 500 430" },
-  { from: "se2", to: "device", fromPort: "right", toPort: "left", label: "8 B", labelX: 400, labelY: 680, source: SOURCE.secureElement2, path: "firmware/se2.c:1331–1347", route: "M 295 740 C 390 740 405 455 500 455" },
-  { from: "device", to: "mix", fromPort: "right", toPort: "top", label: "always included", labelX: 900, labelY: 430, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837", route: "M 780 430 H 1015 Q 1035 430 1035 450 V 550" },
-  { from: "mash", to: "mix", fromPort: "right", toPort: "left", label: "if Mash selected", labelX: 840, labelY: 595, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837", route: "M 780 595 H 900" },
-  { from: "symbols", to: "mix", fromPort: "right", toPort: "bottom", label: "if Dice/Coin selected", labelX: 900, labelY: 782.5, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837", route: "M 780 782.5 H 1015 Q 1035 782.5 1035 762.5 V 660" },
-  { from: "mix", to: "words", fromPort: "right", toPort: "left", label: "16|32 B", labelX: 1210, labelY: 605, source: SOURCE.seedWords, path: "firmware/shared/seed.py:887–898" }
+  { from: "se1Reseed", to: "runtimeReseed", fromPort: "right", toPort: "left" },
+  { from: "se2Reseed", to: "runtimeReseed", fromPort: "right", toPort: "left" },
+  { from: "runtimeReseed", to: "mcuRandom", fromPort: "bottom", toPort: "top", route: "M 982.5 235 V 305 H 470 V 380 H 175 V 400" },
+  { from: "mcuRandom", to: "device", fromPort: "right", toPort: "left", route: "M 325 472.5 C 400 472.5 425 405 500 405" },
+  { from: "se1", to: "device", fromPort: "right", toPort: "left", route: "M 295 615 C 390 615 405 430 500 430" },
+  { from: "se2", to: "device", fromPort: "right", toPort: "left", route: "M 295 740 C 390 740 405 455 500 455" },
+  { from: "device", to: "mix", fromPort: "right", toPort: "top", route: "M 780 430 H 1040 Q 1060 430 1060 450 V 535" },
+  { from: "mash", to: "mix", fromPort: "right", toPort: "left", route: "M 780 595 H 900" },
+  { from: "symbols", to: "mix", fromPort: "right", toPort: "bottom", route: "M 780 792.5 H 1040 Q 1060 792.5 1060 772.5 V 680" },
+  { from: "mix", to: "words", fromPort: "right", toPort: "left", route: "M 1220 607.5 H 1250" }
 ];
 
 const graph = document.querySelector("#seed-graph");
@@ -352,14 +360,6 @@ function renderDefinitions() {
   marker.append(svgElement("path", { d: "M 0 0 L 8 4 L 0 8 z", fill: "#696953" }));
   defs.append(marker);
 
-  const guardMarker = svgElement("marker", {
-    id: "guard-arrow", markerWidth: 8, markerHeight: 8, refX: 7, refY: 4,
-    orient: "auto", markerUnits: "strokeWidth"
-  });
-  guardMarker.append(svgElement("path", {
-    d: "M 0 0 L 8 4 L 0 8 z", fill: "#ff6868"
-  }));
-  defs.append(guardMarker);
   graph.append(defs);
 }
 
@@ -403,46 +403,13 @@ function renderEdge(edge) {
   const start = anchor(from, edge.fromPort);
   const end = anchor(to, edge.toPort);
   const path = edge.route || connector(start, end, edge.fromPort, edge.toPort);
-  const link = svgElement("a", {
-    href: edge.source,
-    target: "_blank",
-    rel: "noreferrer",
-    class: edge.control ? "edge-link control-link" : "edge-link",
-    tabindex: "0",
-    "aria-label": `${from.title} to ${to.title}: open implementation source`
-  });
-
-  const title = svgElement("title");
-  title.textContent = `${from.title} → ${to.title} · ${edge.path}`;
-  link.append(title);
-  link.append(svgElement("path", { d: path, class: "edge-hit" }));
-  link.append(svgElement("path", {
+  const group = svgElement("g", { class: "edge-group", "aria-hidden": "true" });
+  group.append(svgElement("path", {
     d: path,
-    class: edge.control ? "flow-edge is-control" : "flow-edge",
-    "marker-end": edge.control ? "url(#guard-arrow)" : "url(#arrow)"
+    class: "flow-edge",
+    "marker-end": "url(#arrow)"
   }));
-
-  const width = Math.max(48, edge.label.length * 7 + 16);
-  const label = svgElement("g", { class: "edge-label" });
-  label.append(svgElement("rect", {
-    x: edge.labelX - width / 2,
-    y: edge.labelY - 10,
-    width,
-    height: 20,
-    rx: 5
-  }));
-  const text = svgElement("text", {
-    x: edge.labelX,
-    y: edge.labelY + 3.5,
-    "text-anchor": "middle"
-  });
-  text.textContent = edge.label;
-  label.append(text);
-  link.append(label);
-
-  link.addEventListener("pointerenter", () => setSourcePeek("EDGE", edge.path, edge.source));
-  link.addEventListener("focus", () => setSourcePeek("EDGE", edge.path, edge.source));
-  graph.append(link);
+  graph.append(group);
 }
 
 function renderNode(node) {
@@ -487,11 +454,12 @@ function renderNode(node) {
   });
   const lines = Array.isArray(node.expression) ? node.expression : [node.expression];
   lines.forEach((line, index) => {
+    const indent = line.match(/^ */)[0].length;
     const span = svgElement("tspan", {
-      x: node.x + 17,
+      x: node.x + 17 + indent * 6,
       dy: index === 0 ? 0 : 14
     });
-    span.textContent = line;
+    span.textContent = line.trimStart();
     expression.append(span);
   });
   link.append(expression);
