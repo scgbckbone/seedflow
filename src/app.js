@@ -11,6 +11,8 @@ const SOURCE = Object.freeze({
   rngHardware: "https://github.com/Coldcard/firmware/blob/master/stm32/COLDCARD_MK4/rng.c#L105-L167",
   rngSelftest: "https://github.com/Coldcard/firmware/blob/master/stm32/COLDCARD_MK4/rng.c#L180-L210",
   rngSelftestCall: "https://github.com/Coldcard/firmware/blob/master/stm32/COLDCARD_MK4/modckcc.c#L282-L288",
+  rngBoardHook: "https://github.com/Coldcard/firmware/blob/master/stm32/COLDCARD_MK4/mpconfigboard.h#L83-L84",
+  micropythonInit: "https://github.com/Coldcard/micropython/blob/4107246f8a080807b62c3b4838e71e812ea68b6f/ports/stm32/main.c#L395",
   trngBackend: "https://github.com/switck/libngu/blob/master/ngu/random_backend.h#L26-L41",
   randomBytes: "https://github.com/switck/libngu/blob/master/ngu/random.c#L20-L93",
   secureElement1: "https://github.com/Coldcard/firmware/blob/master/stm32/mk4-bootloader/dispatch.c#L597-L602",
@@ -55,8 +57,12 @@ const NODES = [
         kind: "SOURCE", path: "firmware/modckcc.c:282–288"
       },
       {
-        label: "IMPLEMENTATION", width: 92, href: SOURCE.rngSelftest,
-        kind: "SOURCE", path: "firmware/rng.c:180–210"
+        label: "BOARD HOOK", width: 82, href: SOURCE.rngBoardHook,
+        kind: "SOURCE", path: "firmware/mpconfigboard.h:83–84"
+      },
+      {
+        label: "MICROPYTHON INIT", width: 112, href: SOURCE.micropythonInit,
+        kind: "SOURCE", path: "Coldcard/micropython · main.c:395"
       }
     ]
   },
@@ -74,7 +80,7 @@ const NODES = [
   },
   {
     id: "mcuRandom", x: 750, y: 20, w: 340, h: 130,
-    title: "ngu.random.bytes(32)",
+    title: "Hash_DRBG + fresh STM32 TRNG",
     expression: [
       "seed/reseed: 32 × rng_get() = 128 B",
       "output[32] = Hash_DRBG-SHA256[32]",

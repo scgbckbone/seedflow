@@ -36,7 +36,7 @@ test("graph exposes the technical construction", async () => {
     "RNG->DR → 32-bit word",
     "DRDY ≤ 10 ms · ≤3 attempts",
     "seed error / zero / timeout → EFAULT",
-    "ngu.random.bytes(32)",
+    "Hash_DRBG + fresh STM32 TRNG",
     "seed/reseed: 32 × rng_get() = 128 B",
     "output[32] = Hash_DRBG-SHA256[32]",
     "XOR 8 × rng_get()",
@@ -91,11 +91,14 @@ test("every graph node and edge links directly to implementation source", async 
   assert.match(app, /COLDCARD_MK4\/rng\.c#L180-L210/);
   assert.match(app, /COLDCARD_MK4\/rng\.c#L105-L167/);
   assert.match(app, /COLDCARD_MK4\/modckcc\.c#L282-L288/);
+  assert.match(app, /COLDCARD_MK4\/mpconfigboard\.h#L83-L84/);
+  assert.match(app, /Coldcard\/micropython\/blob\/4107246f/);
   assert.match(app, /random_backend\.h#L26-L41/);
   assert.match(app, /random\.c#L20-L93/);
   assert.match(app, /label: "CALL SITE"/);
-  assert.match(app, /label: "IMPLEMENTATION"/);
-  assert.doesNotMatch(app, /BOARD HOOK|MICROPYTHON INIT/);
+  assert.match(app, /label: "BOARD HOOK"/);
+  assert.match(app, /label: "MICROPYTHON INIT"/);
+  assert.doesNotMatch(app, /label: "IMPLEMENTATION"/);
   assert.match(app, /https:\/\/github\.com\/Coldcard\/firmware/);
   assert.match(app, /https:\/\/github\.com\/switck\/libngu/);
 });
