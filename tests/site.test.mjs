@@ -32,28 +32,27 @@ test("graph exposes the technical construction", async () => {
   const app = await readSource("app.js");
 
   for (const fragment of [
-    "STM32 TRNG / rng_get()",
-    "RNG->DR → 32-bit word",
-    "DRDY ≤ 10 ms · ≤3 attempts",
-    "seed error / zero / timeout → EFAULT",
-    "Hash_DRBG + fresh STM32 TRNG",
-    "TRNG init/auto-reseed: 32 × rng_get() = 128 B",
-    "output[32] = Hash_DRBG-SHA256[32]",
-    "XOR 8 × rng_get()",
-    "zero / repeat / read failure → EFAULT",
-    "Secure-element startup reseed",
+    "STM32 TRNG startup gate",
+    "rng_selftest(): 8 × rng_get() (discarded)",
+    "rng_get(): RNG->DR · DRDY ≤ 10 ms",
+    "zero / seed error / timeout → EFAULT",
+    "self-test failure → __fatal_error()",
+    "application and UI do not start",
+    "mcu_random[32]",
+    "DRBG init/auto-reseed: 32 × rng_get()",
+    "out = Hash_DRBG-SHA256[32]",
+    "XOR 8 × fresh rng_get()",
+    "zero / repeat / failure → EFAULT",
+    "Hash_DRBG startup reseed",
     "n[32] = SHA256d(SE1[32] || SE2[8])",
     "ngu.random.reseed(n)",
     "runs during early application startup",
     "RUNTIME RNG INITIALIZATION",
     "MASTER-SEED GENERATION",
-    "APPLICATION START REQUIRES STM32 TRNG",
-    'titleLines: ["APPLICATION START", "REQUIRES STM32 TRNG"]',
-    "DRDY must appear within 10 ms",
-    "8 reads must reach hardware rng_get()",
-    "missing TRNG or wrong linkage",
-    "→ __fatal_error()",
-    "Python and COLDCARD UI do not start",
+    "SE1 startup sample",
+    "SE2 startup sample",
+    "SE1 seed sample",
+    "SE2 seed sample",
     "SHA256d(mcu_random[32] ||",
     "65 presses → 64 gaps × 2 credited bits",
     "key bytes mixed · 0 credited bits",
@@ -80,19 +79,21 @@ test("every graph node and edge links directly to implementation source", async 
   const edgeCount = (edgeBlock.match(/\bfrom:/g) || []).length;
   const edgeSourceCount = (edgeBlock.match(/\bsource:/g) || []).length;
 
-  assert.equal(nodeCount, 17);
+  assert.equal(nodeCount, 16);
   assert.equal(nodeSourceCount, nodeCount);
-  assert.equal(edgeCount, 16);
+  assert.equal(edgeCount, 15);
   assert.equal(edgeSourceCount, edgeCount);
-  assert.equal((nodeBlock.match(/title: "Secure Element 1"/g) || []).length, 2);
-  assert.equal((nodeBlock.match(/title: "Secure Element 2"/g) || []).length, 2);
+  assert.equal((nodeBlock.match(/id: "se1(?:Reseed)?"/g) || []).length, 2);
+  assert.equal((nodeBlock.match(/id: "se2(?:Reseed)?"/g) || []).length, 2);
+  assert.doesNotMatch(nodeBlock, /id: "trng"/);
+  assert.match(edgeBlock, /from: "trngGate", to: "se1Reseed"/);
   assert.match(edgeBlock, /from: "se1Reseed", to: "runtimeReseed"/);
   assert.match(edgeBlock, /from: "se2Reseed", to: "runtimeReseed"/);
   assert.doesNotMatch(nodeBlock, /id: "context"/);
   assert.doesNotMatch(edgeBlock, /from: "context"/);
   assert.doesNotMatch(edgeBlock, /H 1515/);
   assert.doesNotMatch(edgeBlock, /label:\s*"SHA256d?"/);
-  assert.match(edgeBlock, /label:\s*"required"[^}]+control:\s*true/);
+  assert.match(edgeBlock, /label:\s*"pass"[^}]+control:\s*true/);
   assert.doesNotMatch(nodeBlock, /source:\s*SOURCE\.pushButton/);
   assert.doesNotMatch(edgeBlock, /source:\s*SOURCE\.pushButton/);
   assert.match(app, /href: node\.source/);
@@ -121,7 +122,9 @@ test("every graph node and edge links directly to implementation source", async 
   assert.match(app, /random\.c#L20-L93/);
   assert.match(app, /label: "CALL SITE"/);
   assert.match(app, /label: "BOARD HOOK"/);
-  assert.match(app, /label: "MICROPYTHON INIT"/);
+  assert.match(app, /label: "MPY INIT"/);
+  assert.match(app, /label: "RNG_GET IMPL"/);
+  assert.match(app, /label: "TRNG ADAPTER"/);
   assert.match(app, /label: "SEED CALL"/);
   assert.match(app, /label: "RESEED CALL"/);
   assert.match(app, /label: "BOOT CALL"/);
