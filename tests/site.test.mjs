@@ -87,6 +87,10 @@ test("every graph node and edge links directly to implementation source", async 
   assert.match(app, /https:\/\/coldcard\.com\/docs\/master-seed\/#create-a-new-master-seed/);
   assert.match(app, /dispatch\.c#L597-L602/);
   assert.match(app, /dispatch\.c#L604-L608/);
+  assert.match(app, /ae\.c#L694-L714/);
+  assert.match(app, /se2\.c#L1331-L1347/);
+  assert.match(app, /shared\/seed\.py#L653/);
+  assert.match(app, /shared\/seed\.py#L654/);
   assert.match(app, /shared\/numpad\.py#L61-L87/);
   assert.match(app, /COLDCARD_MK4\/rng\.c#L180-L210/);
   assert.match(app, /COLDCARD_MK4\/rng\.c#L105-L167/);

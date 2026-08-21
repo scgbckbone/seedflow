@@ -15,8 +15,12 @@ const SOURCE = Object.freeze({
   micropythonInit: "https://github.com/Coldcard/micropython/blob/4107246f8a080807b62c3b4838e71e812ea68b6f/ports/stm32/main.c#L395",
   trngBackend: "https://github.com/switck/libngu/blob/master/ngu/random_backend.h#L26-L41",
   randomBytes: "https://github.com/switck/libngu/blob/master/ngu/random.c#L20-L93",
-  secureElement1: "https://github.com/Coldcard/firmware/blob/master/stm32/mk4-bootloader/dispatch.c#L597-L602",
-  secureElement2: "https://github.com/Coldcard/firmware/blob/master/stm32/mk4-bootloader/dispatch.c#L604-L608",
+  secureElement1: "https://github.com/Coldcard/firmware/blob/master/stm32/mk4-bootloader/ae.c#L694-L714",
+  secureElement1Dispatch: "https://github.com/Coldcard/firmware/blob/master/stm32/mk4-bootloader/dispatch.c#L597-L602",
+  secureElement1Call: "https://github.com/Coldcard/firmware/blob/master/shared/seed.py#L653",
+  secureElement2: "https://github.com/Coldcard/firmware/blob/master/stm32/mk4-bootloader/se2.c#L1331-L1347",
+  secureElement2Dispatch: "https://github.com/Coldcard/firmware/blob/master/stm32/mk4-bootloader/dispatch.c#L604-L608",
+  secureElement2Call: "https://github.com/Coldcard/firmware/blob/master/shared/seed.py#L654",
   seedWords: "https://github.com/Coldcard/firmware/blob/master/shared/seed.py#L887-L898",
   bip39Words: "https://github.com/switck/libngu/blob/master/ngu/bip39.py#L318-L344",
   bip39Seed: "https://github.com/switck/libngu/blob/master/ngu/bip39.py#L443-L451",
@@ -92,18 +96,38 @@ const NODES = [
     tone: "process", source: SOURCE.randomBytes
   },
   {
-    id: "se1", x: 400, y: 175, w: 270, h: 90,
+    id: "se1", x: 400, y: 175, w: 270, h: 110,
     title: "Secure Element 1",
     expression: "authenticated_random[32]",
-    path: "firmware/dispatch.c:597–602",
-    tone: "hardware", source: SOURCE.secureElement1
+    path: "firmware/ae.c:694–714",
+    tone: "hardware", source: SOURCE.secureElement1,
+    links: [
+      {
+        label: "DISPATCH", width: 66, href: SOURCE.secureElement1Dispatch,
+        kind: "SOURCE", path: "firmware/dispatch.c:597–602"
+      },
+      {
+        label: "CALL SITE", width: 70, href: SOURCE.secureElement1Call,
+        kind: "SOURCE", path: "firmware/shared/seed.py:653"
+      }
+    ]
   },
   {
-    id: "se2", x: 400, y: 300, w: 270, h: 90,
+    id: "se2", x: 400, y: 300, w: 270, h: 110,
     title: "Secure Element 2",
     expression: "authenticated_random[8]",
-    path: "firmware/dispatch.c:604–608",
-    tone: "hardware", source: SOURCE.secureElement2
+    path: "firmware/se2.c:1331–1347",
+    tone: "hardware", source: SOURCE.secureElement2,
+    links: [
+      {
+        label: "DISPATCH", width: 66, href: SOURCE.secureElement2Dispatch,
+        kind: "SOURCE", path: "firmware/dispatch.c:604–608"
+      },
+      {
+        label: "CALL SITE", width: 70, href: SOURCE.secureElement2Call,
+        kind: "SOURCE", path: "firmware/shared/seed.py:654"
+      }
+    ]
   },
   {
     id: "device", x: 750, y: 180, w: 270, h: 100,
@@ -211,8 +235,8 @@ const EDGES = [
   { from: "rngGate", to: "trng", fromPort: "right", toPort: "left", label: "required", labelX: 362, labelY: 54, source: SOURCE.rngSelftest, path: "firmware/stm32/COLDCARD_MK4/rng.c:180–210", control: true },
   { from: "trng", to: "mcuRandom", fromPort: "right", toPort: "left", label: "rng_get()", labelX: 710, labelY: 45, source: SOURCE.trngBackend, path: "libngu/ngu/random_backend.h:26–41" },
   { from: "mcuRandom", to: "device", fromPort: "bottom", toPort: "top", label: "mcu_random[32]", labelX: 1030, labelY: 165, source: SOURCE.deviceEntropy, path: "firmware/shared/seed.py:646–659" },
-  { from: "se1", to: "device", fromPort: "right", toPort: "left", label: "32 B", labelX: 710, labelY: 220, source: SOURCE.secureElement1, path: "firmware/dispatch.c:597–602" },
-  { from: "se2", to: "device", fromPort: "right", toPort: "left", label: "8 B", labelX: 710, labelY: 309, source: SOURCE.secureElement2, path: "firmware/dispatch.c:604–608" },
+  { from: "se1", to: "device", fromPort: "right", toPort: "left", label: "32 B", labelX: 710, labelY: 230, source: SOURCE.secureElement1, path: "firmware/ae.c:694–714" },
+  { from: "se2", to: "device", fromPort: "right", toPort: "left", label: "8 B", labelX: 710, labelY: 320, source: SOURCE.secureElement2, path: "firmware/se2.c:1331–1347" },
   { from: "device", to: "mix", fromPort: "bottom", toPort: "top", label: "device_entropy[32]", labelX: 892, labelY: 320, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837" },
   { from: "mash", to: "userHash", fromPort: "right", toPort: "left", label: "timing", labelX: 337, labelY: 448, source: SOURCE.mashEntropy, path: "firmware/shared/seed.py:730–790" },
   { from: "symbols", to: "userHash", fromPort: "right", toPort: "left", label: "ASCII", labelX: 337, labelY: 593, source: SOURCE.symbolEntropy, path: "firmware/shared/seed.py:672–728" },
