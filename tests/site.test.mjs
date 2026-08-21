@@ -49,7 +49,7 @@ test("graph exposes the technical construction", async () => {
     "MASTER-SEED GENERATION",
     "1  DEVICE ENTROPY",
     "2  REQUIRED USER INPUT",
-    "3  FINAL MIX",
+    "3  FINAL MIX → BIP39 MNEMONIC",
     "Secure Element 1",
     "Secure Element 2",
     "Fresh startup entropy",
@@ -69,13 +69,8 @@ test("graph exposes the technical construction", async () => {
     "b'CC\\\\x01S' || purpose",
     "SHA256d(b'CC\\\\x01S' || purpose",
     "device_entropy[32] || selected digest[32])",
-    "Optional BIP39 passphrase",
-    "PBKDF2-HMAC-SHA512",
-    "password = mnemonic",
-    "salt = \\\"mnemonic\\\" || passphrase",
-    "2048 iterations",
-    "Root = HMAC-SHA512(key = \\\"Bitcoin seed\\\"",
-    "Child keys are derived using the selected BIP32 path"
+    "BIP39 mnemonic",
+    "16 B → 12 words · 32 B → 24 words"
   ]) {
     assert.ok(app.includes(fragment), `missing graph expression: ${fragment}`);
   }
@@ -93,9 +88,9 @@ test("every graph node and edge links directly to implementation source", async 
   const phaseCount = (phaseBlock.match(/\blabel:/g) || []).length;
   const phaseSourceCount = (phaseBlock.match(/\bsource:/g) || []).length;
 
-  assert.equal(nodeCount, 15);
+  assert.equal(nodeCount, 12);
   assert.equal(nodeSourceCount, nodeCount);
-  assert.equal(edgeCount, 13);
+  assert.equal(edgeCount, 10);
   assert.equal(edgeSourceCount, edgeCount);
   assert.equal(phaseCount, 3);
   assert.equal(phaseSourceCount, phaseCount);
@@ -107,13 +102,16 @@ test("every graph node and edge links directly to implementation source", async 
   assert.match(edgeBlock, /from: "se2Reseed", to: "runtimeReseed"/);
   assert.match(edgeBlock, /label: "if Mash selected"/);
   assert.match(edgeBlock, /label: "if Dice\/Coin selected"/);
-  assert.match(edgeBlock, /label: "passphrase"/);
+  assert.doesNotMatch(edgeBlock, /label: "passphrase"/);
   assert.doesNotMatch(edgeBlock, /label: "ASCII"/);
   assert.doesNotMatch(edgeBlock, /label: "salt"/);
   assert.doesNotMatch(nodeBlock, /id: "context"/);
   assert.doesNotMatch(nodeBlock, /id: "userHash"/);
   assert.doesNotMatch(nodeBlock, /id: "mashDigest"/);
   assert.doesNotMatch(nodeBlock, /id: "symbolDigest"/);
+  assert.doesNotMatch(nodeBlock, /id: "passphrase"/);
+  assert.doesNotMatch(nodeBlock, /id: "bip39"/);
+  assert.doesNotMatch(nodeBlock, /id: "bip32"/);
   assert.doesNotMatch(nodeBlock, /user_entropy\[32\]/);
   assert.doesNotMatch(app, /userEntropy/);
   assert.doesNotMatch(edgeBlock, /from: "context"/);

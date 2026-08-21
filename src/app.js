@@ -26,9 +26,6 @@ const SOURCE = Object.freeze({
   randomReseed: "https://github.com/switck/libngu/blob/master/ngu/random.c#L159-L171",
   seedWords: "https://github.com/Coldcard/firmware/blob/master/shared/seed.py#L887-L898",
   bip39Words: "https://github.com/switck/libngu/blob/master/ngu/bip39.py#L318-L344",
-  bip39Seed: "https://github.com/switck/libngu/blob/master/ngu/bip39.py#L443-L451",
-  bip32: "https://github.com/switck/libngu/blob/master/ngu/hdnode.c#L359-L386",
-  bip32Children: "https://github.com/switck/libngu/blob/master/ngu/hdnode.c#L359-L554",
   pushButton: "https://petertodd.org/2014/push-button-rng",
   masterSeedDocs: "https://coldcard.com/docs/master-seed/#create-a-new-master-seed"
 });
@@ -73,7 +70,7 @@ const PHASES = [
     path: "firmware/shared/seed.py:792–837"
   },
   {
-    label: "3  FINAL MIX", x: 960, y: 866, w: 230,
+    label: "3  FINAL MIX → BIP39 MNEMONIC", x: 960, y: 866, w: 615,
     color: "#ffcc00", source: SOURCE.seedMix,
     path: "firmware/shared/seed.py:792–837"
   }
@@ -293,39 +290,7 @@ const NODES = [
     title: "BIP39 mnemonic",
     expression: "16 B → 12 words · 32 B → 24 words",
     path: "libngu/ngu/bip39.py:318–344",
-    tone: "standard", source: SOURCE.bip39Words
-  },
-  {
-    id: "passphrase", x: 950, y: 675, w: 280, h: 70,
-    title: "Optional BIP39 passphrase",
-    expression: [],
-    path: "libngu/ngu/bip39.py:443–451",
-    tone: "human", source: SOURCE.bip39Seed
-  },
-  {
-    id: "bip39", x: 1325, y: 665, w: 250, h: 100,
-    title: "BIP39 seed[64]",
-    expression: [
-      "PBKDF2-HMAC-SHA512",
-      "password = mnemonic",
-      "salt = \"mnemonic\" || passphrase",
-      "2048 iterations"
-    ],
-    expressionSize: 10.1,
-    path: "libngu/ngu/bip39.py:443–451",
-    tone: "standard", source: SOURCE.bip39Seed
-  },
-  {
-    id: "bip32", x: 1200, y: 800, w: 375, h: 85,
-    title: "BIP32 root + children",
-    expression: [
-      "Root = HMAC-SHA512(key = \"Bitcoin seed\",",
-      "                    data = BIP39 seed)",
-      "Child keys are derived using the selected BIP32 path"
-    ],
-    expressionSize: 10.1,
-    path: "libngu/ngu/hdnode.c:359–554",
-    tone: "result", source: SOURCE.bip32Children
+    tone: "result", source: SOURCE.bip39Words
   }
 ];
 
@@ -339,10 +304,7 @@ const EDGES = [
   { from: "device", to: "mix", fromPort: "right", toPort: "top", label: "device_entropy[32]", labelX: 800, labelY: 390, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837", route: "M 620 605 H 640 V 390 H 1095 V 520" },
   { from: "mash", to: "mix", fromPort: "bottom", toPort: "left", label: "if Mash selected", labelX: 865, labelY: 600, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837", route: "M 790 590 V 600 H 940 Q 960 600 960 580" },
   { from: "symbols", to: "mix", fromPort: "right", toPort: "bottom", label: "if Dice/Coin selected", labelX: 1015, labelY: 650, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837", route: "M 930 682.5 H 940 V 650 H 1095 V 630" },
-  { from: "mix", to: "words", fromPort: "right", toPort: "left", label: "16|32 B", labelX: 1275, labelY: 555, source: SOURCE.seedWords, path: "firmware/shared/seed.py:887–898" },
-  { from: "words", to: "bip39", fromPort: "bottom", toPort: "top", label: "mnemonic", labelX: 1450, labelY: 645, source: SOURCE.bip39Seed, path: "libngu/ngu/bip39.py:443–451" },
-  { from: "passphrase", to: "bip39", fromPort: "right", toPort: "left", label: "passphrase", labelX: 1278, labelY: 700, source: SOURCE.bip39Seed, path: "libngu/ngu/bip39.py:443–451" },
-  { from: "bip39", to: "bip32", fromPort: "bottom", toPort: "top", label: "64 B", labelX: 1430, labelY: 785, source: SOURCE.bip32, path: "libngu/ngu/hdnode.c:359–386" }
+  { from: "mix", to: "words", fromPort: "right", toPort: "left", label: "16|32 B", labelX: 1275, labelY: 555, source: SOURCE.seedWords, path: "firmware/shared/seed.py:887–898" }
 ];
 
 const graph = document.querySelector("#seed-graph");
