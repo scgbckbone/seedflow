@@ -63,17 +63,17 @@ const LANES = [
 
 const PHASES = [
   {
-    label: "1  DEVICE ENTROPY", x: 25, y: 345, w: 595,
+    label: "1  DEVICE ENTROPY", x: 25, y: 866, w: 595,
     color: "#6ed5ff", source: SOURCE.deviceEntropy,
     path: "firmware/shared/seed.py:646–659"
   },
   {
-    label: "2  REQUIRED USER INPUT", x: 650, y: 345, w: 280,
+    label: "2  REQUIRED USER INPUT", x: 650, y: 866, w: 280,
     color: "#8be28b", source: SOURCE.seedMix,
     path: "firmware/shared/seed.py:792–837"
   },
   {
-    label: "3  FINAL MIX", x: 960, y: 345, w: 270,
+    label: "3  FINAL MIX", x: 960, y: 866, w: 230,
     color: "#ffcc00", source: SOURCE.seedMix,
     path: "firmware/shared/seed.py:792–837"
   }
