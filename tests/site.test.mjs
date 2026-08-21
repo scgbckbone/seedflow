@@ -45,6 +45,8 @@ test("graph exposes the technical construction", async () => {
     "n[32] = SHA256d(SE1[32] || SE2[8])",
     "ngu.random.reseed(n)",
     "runs during early application startup",
+    "RUNTIME RNG INITIALIZATION",
+    "MASTER-SEED GENERATION",
     "APPLICATION START REQUIRES STM32 TRNG",
     'titleLines: ["APPLICATION START", "REQUIRES STM32 TRNG"]',
     "DRDY must appear within 10 ms",
@@ -85,12 +87,14 @@ test("every graph node and edge links directly to implementation source", async 
   assert.equal((nodeBlock.match(/title: "Secure Element 2"/g) || []).length, 2);
   assert.match(edgeBlock, /from: "se1Reseed", to: "runtimeReseed"/);
   assert.match(edgeBlock, /from: "se2Reseed", to: "runtimeReseed"/);
+  assert.doesNotMatch(edgeBlock, /H 1515/);
   assert.doesNotMatch(edgeBlock, /label:\s*"SHA256d?"/);
   assert.match(edgeBlock, /label:\s*"required"[^}]+control:\s*true/);
   assert.doesNotMatch(nodeBlock, /source:\s*SOURCE\.pushButton/);
   assert.doesNotMatch(edgeBlock, /source:\s*SOURCE\.pushButton/);
   assert.match(app, /href: node\.source/);
   assert.match(app, /href: edge\.source/);
+  assert.match(app, /href: lane\.source/);
   assert.match(app, /https:\/\/petertodd\.org\/2014\/push-button-rng/);
   assert.match(app, /https:\/\/coldcard\.com\/docs\/master-seed\/#create-a-new-master-seed/);
   assert.match(app, /dispatch\.c#L597-L602/);

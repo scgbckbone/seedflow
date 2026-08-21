@@ -102,8 +102,40 @@ body {
 
 .flow-node,
 .edge-link,
-.node-chip {
+.node-chip,
+.lane-link {
   outline: none;
+}
+
+.lane-link {
+  cursor: alias;
+}
+
+.lane-divider {
+  stroke: #3a3a2d;
+  stroke-width: 1;
+  stroke-dasharray: 3 7;
+  vector-effect: non-scaling-stroke;
+  transition: stroke 120ms ease;
+}
+
+.lane-label {
+  fill: var(--dim);
+  font-family: var(--mono);
+  font-size: 9px;
+  font-weight: 650;
+  letter-spacing: 0.14em;
+  transition: fill 120ms ease;
+}
+
+.lane-link:hover .lane-divider,
+.lane-link:focus .lane-divider {
+  stroke: var(--yellow);
+}
+
+.lane-link:hover .lane-label,
+.lane-link:focus .lane-label {
+  fill: var(--yellow-soft);
 }
 
 .flow-node {
