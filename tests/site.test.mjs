@@ -35,10 +35,11 @@ test("graph exposes the technical construction", async () => {
     "init = TRNG[128]",
     "generate[32] XOR TRNG_fresh[32]",
     "mcu[32] || se1[32]",
-    "gap = ticks_diff(now, last)",
-    "pack('<IIB', count, gap, key)",
-    "D: ASCII 1..6",
-    "C: ASCII 1|0",
+    "65 presses → 64 gaps × 2 credited bits",
+    "key bytes mixed · 0 credited bits",
+    "pack('<IIB', count, Δticks, key)",
+    "Dice Rolls: ≥50 · ASCII 1..6",
+    "Coin Flips: ≥128 · ASCII 1|0",
     "b'CC\\\\x01' || method",
     "b'CC\\\\x01S' || purpose",
     "context || device_entropy",
@@ -67,6 +68,8 @@ test("every graph node and edge links directly to implementation source", async 
   assert.match(app, /href: node\.source/);
   assert.match(app, /href: edge\.source/);
   assert.match(app, /https:\/\/petertodd\.org\/2014\/push-button-rng/);
+  assert.match(app, /https:\/\/coldcard\.com\/docs\/master-seed/);
+  assert.match(app, /shared\/numpad\.py#L61-L87/);
   assert.match(app, /https:\/\/github\.com\/Coldcard\/firmware/);
   assert.match(app, /https:\/\/github\.com\/switck\/libngu/);
 });

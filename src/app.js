@@ -7,6 +7,7 @@ const SOURCE = Object.freeze({
   userEntropy: "https://github.com/Coldcard/firmware/blob/master/shared/seed.py#L688-L790",
   symbolEntropy: "https://github.com/Coldcard/firmware/blob/master/shared/seed.py#L672-L728",
   mashEntropy: "https://github.com/Coldcard/firmware/blob/master/shared/seed.py#L730-L790",
+  mashTiming: "https://github.com/Coldcard/firmware/blob/master/shared/numpad.py#L61-L87",
   hashDrbg: "https://github.com/switck/libngu/blob/master/ngu/random.c#L41-L91",
   secureElements: "https://github.com/Coldcard/firmware/blob/master/stm32/mk4-bootloader/dispatch.c#L592-L608",
   seedWords: "https://github.com/Coldcard/firmware/blob/master/shared/seed.py#L887-L968",
@@ -14,7 +15,8 @@ const SOURCE = Object.freeze({
   bip39Seed: "https://github.com/switck/libngu/blob/master/ngu/bip39.py#L443-L451",
   bip32: "https://github.com/switck/libngu/blob/master/ngu/hdnode.c#L359-L386",
   bip32Children: "https://github.com/switck/libngu/blob/master/ngu/hdnode.c#L359-L554",
-  pushButton: "https://petertodd.org/2014/push-button-rng"
+  pushButton: "https://petertodd.org/2014/push-button-rng",
+  masterSeedDocs: "https://coldcard.com/docs/master-seed"
 });
 
 const TONES = Object.freeze({
@@ -63,22 +65,51 @@ const NODES = [
     tone: "result", source: SOURCE.deviceEntropy
   },
   {
-    id: "mash", x: 25, y: 380, w: 250, h: 90,
+    id: "mash", x: 25, y: 370, w: 280, h: 145,
     title: "Mash Keys",
-    expression: ["gap = ticks_diff(now, last)", "pack('<IIB', count, gap, key)"],
+    expression: [
+      "65 presses → 64 gaps × 2 credited bits",
+      "key bytes mixed · 0 credited bits",
+      "pack('<IIB', count, Δticks, key)"
+    ],
+    expressionSize: 9,
     path: "firmware/shared/seed.py:730–790",
     tone: "human", source: SOURCE.mashEntropy,
-    doc: SOURCE.pushButton, docLabel: "MASH: PBRNG PAPER"
+    links: [
+      {
+        label: "TIMING", width: 54, href: SOURCE.mashTiming,
+        kind: "SOURCE", path: "firmware/shared/numpad.py:61–87"
+      },
+      {
+        label: "MASTER SEED DOCS", width: 100, href: SOURCE.masterSeedDocs,
+        kind: "DOCS", path: "coldcard.com/docs/master-seed"
+      },
+      {
+        label: "PUSH-BUTTON RNG", width: 100, href: SOURCE.pushButton,
+        kind: "REFERENCE", path: "petertodd.org/2014/push-button-rng"
+      }
+    ]
   },
   {
-    id: "symbols", x: 25, y: 520, w: 250, h: 90,
+    id: "symbols", x: 25, y: 540, w: 280, h: 130,
     title: "Dice Rolls / Coin Flips",
-    expression: ["D: ASCII 1..6", "C: ASCII 1|0"],
+    expression: [
+      "Dice Rolls: ≥50 · ASCII 1..6",
+      "Coin Flips: ≥128 · ASCII 1|0",
+      "max frequency: dice 30% · coin 65%"
+    ],
+    expressionSize: 9,
     path: "firmware/shared/seed.py:672–728",
-    tone: "human", source: SOURCE.symbolEntropy
+    tone: "human", source: SOURCE.symbolEntropy,
+    links: [
+      {
+        label: "MASTER SEED DOCS", width: 100, href: SOURCE.masterSeedDocs,
+        kind: "DOCS", path: "coldcard.com/docs/master-seed"
+      }
+    ]
   },
   {
-    id: "userHash", x: 330, y: 450, w: 200, h: 90,
+    id: "userHash", x: 370, y: 490, w: 200, h: 90,
     title: "SHA256",
     expression: ["b'CC\\x01' || method", "|| encoded_events"],
     path: "firmware/shared/seed.py:688–790",
@@ -141,9 +172,9 @@ const EDGES = [
   { from: "se2", to: "deviceHash", fromPort: "right", toPort: "left", label: "8 B", labelX: 300, labelY: 286, source: SOURCE.secureElements, path: "firmware/dispatch.c:592–608" },
   { from: "deviceHash", to: "device", fromPort: "right", toPort: "left", label: "SHA256d", labelX: 560, labelY: 178, source: SOURCE.deviceEntropy, path: "firmware/shared/seed.py:646–659" },
   { from: "device", to: "mix", fromPort: "bottom", toPort: "top", label: "device[32]", labelX: 805, labelY: 300, source: SOURCE.seed, path: "firmware/shared/seed.py:646–850" },
-  { from: "mash", to: "userHash", fromPort: "right", toPort: "left", label: "timing", labelX: 302, labelY: 414, source: SOURCE.mashEntropy, path: "firmware/shared/seed.py:730–790" },
-  { from: "symbols", to: "userHash", fromPort: "right", toPort: "left", label: "ASCII", labelX: 302, labelY: 551, source: SOURCE.symbolEntropy, path: "firmware/shared/seed.py:672–728" },
-  { from: "userHash", to: "mix", fromPort: "right", toPort: "left", label: "digest[32]", labelX: 665, labelY: 463, source: SOURCE.userEntropy, path: "firmware/shared/seed.py:688–790" },
+  { from: "mash", to: "userHash", fromPort: "right", toPort: "left", label: "timing", labelX: 337, labelY: 448, source: SOURCE.mashEntropy, path: "firmware/shared/seed.py:730–790" },
+  { from: "symbols", to: "userHash", fromPort: "right", toPort: "left", label: "ASCII", labelX: 337, labelY: 593, source: SOURCE.symbolEntropy, path: "firmware/shared/seed.py:672–728" },
+  { from: "userHash", to: "mix", fromPort: "right", toPort: "left", label: "digest[32]", labelX: 685, labelY: 484, source: SOURCE.userEntropy, path: "firmware/shared/seed.py:688–790" },
   { from: "context", to: "mix", fromPort: "right", toPort: "bottom", label: "CC\\x01S | purpose | method", labelX: 820, labelY: 600, source: SOURCE.constants, path: "firmware/shared/seed.py:39–55" },
   { from: "mix", to: "seed", fromPort: "right", toPort: "left", label: "SHA256d", labelX: 1067, labelY: 412, source: SOURCE.seed, path: "firmware/shared/seed.py:646–850" },
   { from: "seed", to: "words", fromPort: "right", toPort: "left", label: "16|32 B", labelX: 1347, labelY: 412, source: SOURCE.seedWords, path: "firmware/shared/seed.py:887–968" },
@@ -273,6 +304,7 @@ function renderNode(node) {
   });
   link.style.setProperty("--node-color", tone.color);
   link.style.setProperty("--node-glow", tone.glow);
+  link.style.setProperty("--expression-size", `${node.expressionSize || 10}px`);
 
   const title = svgElement("title");
   title.textContent = `${node.title} · ${node.path}`;
@@ -302,7 +334,9 @@ function renderNode(node) {
   link.append(expression);
 
   const pathText = svgElement("text", {
-    x: node.x + 17, y: node.y + node.h - 13, class: "node-path"
+    x: node.x + 17,
+    y: node.y + node.h - (node.links ? 39 : 13),
+    class: "node-path"
   });
   pathText.textContent = node.path;
   link.append(pathText);
@@ -311,29 +345,43 @@ function renderNode(node) {
   link.addEventListener("focus", () => setSourcePeek("NODE", node.path, node.source));
   graph.append(link);
 
-  if (node.doc) renderDocLink(node);
+  if (node.links) renderNodeLinks(node);
 }
 
-function renderDocLink(node) {
-  const width = 132;
-  const x = node.x;
-  const y = node.y + node.h + 8;
-  const link = svgElement("a", {
-    href: node.doc,
-    target: "_blank",
-    rel: "noreferrer",
-    class: "doc-link",
-    tabindex: "0",
-    "aria-label": "Mash Keys: open Push-Button RNG reference"
+function renderNodeLinks(node) {
+  const gap = 6;
+  const totalWidth = node.links.reduce((sum, item) => sum + item.width, 0)
+    + gap * (node.links.length - 1);
+  let x = node.x + (node.w - totalWidth) / 2;
+  const y = node.y + node.h - 27;
+
+  node.links.forEach((item) => {
+    const link = svgElement("a", {
+      href: item.href,
+      target: "_blank",
+      rel: "noreferrer",
+      class: "node-chip",
+      tabindex: "0",
+      "aria-label": `${node.title}: open ${item.label}`
+    });
+    const title = svgElement("title");
+    title.textContent = `${node.title} · ${item.path}`;
+    link.append(title);
+    link.append(svgElement("rect", {
+      x, y, width: item.width, height: 18, rx: 5
+    }));
+    const text = svgElement("text", {
+      x: x + item.width / 2,
+      y: y + 12.5,
+      "text-anchor": "middle"
+    });
+    text.textContent = item.label;
+    link.append(text);
+    link.addEventListener("pointerenter", () => setSourcePeek(item.kind, item.path, item.href));
+    link.addEventListener("focus", () => setSourcePeek(item.kind, item.path, item.href));
+    graph.append(link);
+    x += item.width + gap;
   });
-  const title = svgElement("title");
-  title.textContent = "Mash Keys · Peter Todd's Push-Button RNG";
-  link.append(title);
-  link.append(svgElement("rect", { x, y, width, height: 18, rx: 5 }));
-  const text = svgElement("text", { x: x + width / 2, y: y + 12.5, "text-anchor": "middle" });
-  text.textContent = node.docLabel;
-  link.append(text);
-  graph.append(link);
 }
 
 renderDefinitions();

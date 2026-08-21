@@ -102,7 +102,7 @@ body {
 
 .flow-node,
 .edge-link,
-.doc-link {
+.node-chip {
   outline: none;
 }
 
@@ -142,7 +142,7 @@ body {
 .node-expression {
   fill: var(--muted);
   font-family: var(--mono);
-  font-size: 10px;
+  font-size: var(--expression-size, 10px);
 }
 
 .node-path {
@@ -201,30 +201,30 @@ body {
   fill: var(--yellow-soft);
 }
 
-.doc-link {
+.node-chip {
   cursor: alias;
 }
 
-.doc-link rect {
+.node-chip rect {
   fill: #10100c;
   stroke: #4b4a3a;
   vector-effect: non-scaling-stroke;
 }
 
-.doc-link text {
+.node-chip text {
   fill: var(--dim);
   font-family: var(--mono);
   font-size: 8.5px;
   pointer-events: none;
 }
 
-.doc-link:hover rect,
-.doc-link:focus rect {
+.node-chip:hover rect,
+.node-chip:focus rect {
   stroke: var(--yellow);
 }
 
-.doc-link:hover text,
-.doc-link:focus text {
+.node-chip:hover text,
+.node-chip:focus text {
   fill: var(--yellow-soft);
 }
 
