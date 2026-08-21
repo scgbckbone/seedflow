@@ -32,21 +32,21 @@ test("graph exposes the technical construction", async () => {
   const app = await readSource("app.js");
 
   for (const fragment of [
-    "STM32 TRNG startup gate",
-    "rng_selftest(): 8 × rng_get() (discarded)",
+    "STM32 TRNG self-test",
+    "rng_selftest() · application startup gate",
+    "8 × rng_get() (discarded)",
     "rng_get(): RNG->DR · DRDY ≤ 10 ms",
     "zero / seed error / timeout → EFAULT",
-    "self-test failure → __fatal_error()",
-    "application and UI do not start",
+    "failure → __fatal_error(); UI does not start",
     "mcu_random[32]",
     "DRBG init/auto-reseed: 32 × rng_get()",
     "out = Hash_DRBG-SHA256[32]",
     "XOR 8 × fresh rng_get()",
     "zero / repeat / failure → EFAULT",
-    "Hash_DRBG startup reseed",
+    "SE entropy → Hash_DRBG reseed",
     "n[32] = SHA256d(SE1[32] || SE2[8])",
     "ngu.random.reseed(n)",
-    "runs during early application startup",
+    "→ cf_hash_drbg_sha256_reseed(drbg, n)",
     "RUNTIME RNG INITIALIZATION",
     "MASTER-SEED GENERATION",
     "SE1 startup sample",
@@ -81,19 +81,19 @@ test("every graph node and edge links directly to implementation source", async 
 
   assert.equal(nodeCount, 16);
   assert.equal(nodeSourceCount, nodeCount);
-  assert.equal(edgeCount, 15);
+  assert.equal(edgeCount, 14);
   assert.equal(edgeSourceCount, edgeCount);
   assert.equal((nodeBlock.match(/id: "se1(?:Reseed)?"/g) || []).length, 2);
   assert.equal((nodeBlock.match(/id: "se2(?:Reseed)?"/g) || []).length, 2);
   assert.doesNotMatch(nodeBlock, /id: "trng"/);
-  assert.match(edgeBlock, /from: "trngGate", to: "se1Reseed"/);
+  assert.doesNotMatch(edgeBlock, /from: "trngGate"/);
   assert.match(edgeBlock, /from: "se1Reseed", to: "runtimeReseed"/);
   assert.match(edgeBlock, /from: "se2Reseed", to: "runtimeReseed"/);
   assert.doesNotMatch(nodeBlock, /id: "context"/);
   assert.doesNotMatch(edgeBlock, /from: "context"/);
   assert.doesNotMatch(edgeBlock, /H 1515/);
   assert.doesNotMatch(edgeBlock, /label:\s*"SHA256d?"/);
-  assert.match(edgeBlock, /label:\s*"pass"[^}]+control:\s*true/);
+  assert.doesNotMatch(edgeBlock, /control:\s*true/);
   assert.doesNotMatch(nodeBlock, /source:\s*SOURCE\.pushButton/);
   assert.doesNotMatch(edgeBlock, /source:\s*SOURCE\.pushButton/);
   assert.match(app, /href: node\.source/);

@@ -65,13 +65,13 @@ const LANES = [
 const NODES = [
   {
     id: "trngGate", x: 25, y: 40, w: 400, h: 190,
-    title: "STM32 TRNG startup gate",
+    title: "STM32 TRNG self-test",
     expression: [
-      "rng_selftest(): 8 × rng_get() (discarded)",
+      "rng_selftest() · application startup gate",
+      "8 × rng_get() (discarded)",
       "rng_get(): RNG->DR · DRDY ≤ 10 ms",
       "zero / seed error / timeout → EFAULT",
-      "self-test failure → __fatal_error()",
-      "application and UI do not start"
+      "failure → __fatal_error(); UI does not start"
     ],
     expressionSize: 9.8,
     path: "firmware/stm32/COLDCARD_MK4/rng.c:180–210",
@@ -153,12 +153,12 @@ const NODES = [
     ]
   },
   {
-    id: "runtimeReseed", x: 800, y: 90, w: 330, h: 145,
-    title: "Hash_DRBG startup reseed",
+    id: "runtimeReseed", x: 800, y: 90, w: 365, h: 145,
+    title: "SE entropy → Hash_DRBG reseed",
     expression: [
       "n[32] = SHA256d(SE1[32] || SE2[8])",
       "ngu.random.reseed(n)",
-      "runs during early application startup"
+      "→ cf_hash_drbg_sha256_reseed(drbg, n)"
     ],
     expressionSize: 10.1,
     path: "firmware/shared/mk4.py:39–50",
@@ -308,7 +308,6 @@ const NODES = [
 ];
 
 const EDGES = [
-  { from: "trngGate", to: "se1Reseed", fromPort: "right", toPort: "left", label: "pass", labelX: 450, labelY: 115, source: SOURCE.rngSelftest, path: "firmware/stm32/COLDCARD_MK4/rng.c:180–210", control: true },
   { from: "se1Reseed", to: "runtimeReseed", fromPort: "right", toPort: "left", label: "32 B", labelX: 772, labelY: 80, source: SOURCE.secureElement1ReseedCall, path: "firmware/shared/mk4.py:43" },
   { from: "se2Reseed", to: "runtimeReseed", fromPort: "right", toPort: "left", label: "8 B", labelX: 772, labelY: 248, source: SOURCE.secureElement2ReseedCall, path: "firmware/shared/mk4.py:44" },
   { from: "runtimeReseed", to: "mcuRandom", fromPort: "bottom", toPort: "top", label: "reseeded state", labelX: 955, labelY: 298, source: SOURCE.randomReseed, path: "libngu/ngu/random.c:159–171" },
