@@ -34,16 +34,17 @@ const TONES = Object.freeze({
 
 const NODES = [
   {
-    id: "rngGate", x: 25, y: 5, w: 300, h: 180,
+    id: "rngGate", x: 25, y: 5, w: 300, h: 190,
     title: "APPLICATION START REQUIRES STM32 TRNG",
     titleLines: ["APPLICATION START", "REQUIRES STM32 TRNG"],
     expression: [
       "DRDY must appear within 10 ms",
       "8 reads must reach hardware rng_get()",
-      "missing TRNG or wrong linkage → __fatal_error()",
+      "missing TRNG or wrong linkage",
+      "→ __fatal_error()",
       "Python and COLDCARD UI do not start"
     ],
-    expressionSize: 9,
+    expressionSize: 10.1,
     path: "firmware/stm32/COLDCARD_MK4/rng.c:180–210",
     tone: "guard", source: SOURCE.rngSelftest,
     links: [
@@ -58,21 +59,21 @@ const NODES = [
     ]
   },
   {
-    id: "trng", x: 400, y: 35, w: 250, h: 90,
+    id: "trng", x: 400, y: 35, w: 270, h: 90,
     title: "STM32 TRNG → Hash_DRBG",
     expression: ["init = TRNG[128]", "generate[32] XOR TRNG_fresh[32]"],
     path: "libngu/ngu/random.c:41–91",
     tone: "hardware", source: SOURCE.hashDrbg
   },
   {
-    id: "se1", x: 400, y: 160, w: 250, h: 90,
+    id: "se1", x: 400, y: 160, w: 270, h: 90,
     title: "Secure Element 1",
     expression: "authenticated_random[32]",
     path: "firmware/dispatch.c:597–602",
     tone: "hardware", source: SOURCE.secureElement1
   },
   {
-    id: "se2", x: 400, y: 285, w: 250, h: 90,
+    id: "se2", x: 400, y: 285, w: 270, h: 90,
     title: "Secure Element 2",
     expression: "authenticated_random[8]",
     path: "firmware/dispatch.c:604–608",
@@ -93,7 +94,7 @@ const NODES = [
       "key bytes mixed · 0 credited bits",
       "pack('<IIB', count, Δticks, key)"
     ],
-    expressionSize: 9,
+    expressionSize: 10.1,
     path: "firmware/shared/seed.py:730–790",
     tone: "human", source: SOURCE.mashEntropy,
     links: [
@@ -119,7 +120,7 @@ const NODES = [
       "Coin Flips: ≥128 · ASCII 1|0",
       "max frequency: dice 30% · coin 65%"
     ],
-    expressionSize: 9,
+    expressionSize: 10.1,
     path: "firmware/shared/seed.py:672–728",
     tone: "human", source: SOURCE.symbolEntropy,
     links: [
@@ -151,28 +152,28 @@ const NODES = [
     tone: "process", source: SOURCE.seedMix
   },
   {
-    id: "words", x: 1170, y: 385, w: 220, h: 90,
+    id: "words", x: 1150, y: 385, w: 260, h: 90,
     title: "BIP39 mnemonic",
     expression: "16 B → 12 words · 32 B → 24 words",
     path: "libngu/ngu/bip39.py:318–344",
     tone: "standard", source: SOURCE.bip39Words
   },
   {
-    id: "passphrase", x: 1100, y: 610, w: 215, h: 90,
+    id: "passphrase", x: 1070, y: 610, w: 245, h: 90,
     title: "BIP39 passphrase",
     expression: "salt = mnemonic || passphrase",
     path: "libngu/ngu/bip39.py:443–451",
     tone: "human", source: SOURCE.bip39Seed
   },
   {
-    id: "bip39", x: 1380, y: 610, w: 195, h: 90,
+    id: "bip39", x: 1370, y: 610, w: 205, h: 90,
     title: "BIP39 seed[64]",
     expression: "PBKDF2-HMAC-SHA512 · 2048",
     path: "libngu/ngu/bip39.py:443–451",
     tone: "standard", source: SOURCE.bip39Seed
   },
   {
-    id: "bip32", x: 1350, y: 755, w: 225, h: 90,
+    id: "bip32", x: 1325, y: 755, w: 250, h: 90,
     title: "BIP32 root + children",
     expression: ["HMAC-SHA512(\"Bitcoin seed\",", "bip39_seed) → derive(path)"],
     path: "libngu/ngu/hdnode.c:359–554",
@@ -181,18 +182,18 @@ const NODES = [
 ];
 
 const EDGES = [
-  { from: "rngGate", to: "trng", fromPort: "right", toPort: "left", label: "required", labelX: 362, labelY: 88, source: SOURCE.rngSelftest, path: "firmware/stm32/COLDCARD_MK4/rng.c:180–210", control: true },
-  { from: "trng", to: "device", fromPort: "right", toPort: "left", label: "32 B", labelX: 700, labelY: 126, source: SOURCE.hashDrbg, path: "libngu/ngu/random.c:41–91" },
-  { from: "se1", to: "device", fromPort: "right", toPort: "left", label: "32 B", labelX: 700, labelY: 205, source: SOURCE.secureElement1, path: "firmware/dispatch.c:597–602" },
-  { from: "se2", to: "device", fromPort: "right", toPort: "left", label: "8 B", labelX: 700, labelY: 294, source: SOURCE.secureElement2, path: "firmware/dispatch.c:604–608" },
+  { from: "rngGate", to: "trng", fromPort: "right", toPort: "left", label: "required", labelX: 362, labelY: 54, source: SOURCE.rngSelftest, path: "firmware/stm32/COLDCARD_MK4/rng.c:180–210", control: true },
+  { from: "trng", to: "device", fromPort: "right", toPort: "left", label: "32 B", labelX: 710, labelY: 126, source: SOURCE.hashDrbg, path: "libngu/ngu/random.c:41–91" },
+  { from: "se1", to: "device", fromPort: "right", toPort: "left", label: "32 B", labelX: 710, labelY: 205, source: SOURCE.secureElement1, path: "firmware/dispatch.c:597–602" },
+  { from: "se2", to: "device", fromPort: "right", toPort: "left", label: "8 B", labelX: 710, labelY: 294, source: SOURCE.secureElement2, path: "firmware/dispatch.c:604–608" },
   { from: "device", to: "mix", fromPort: "bottom", toPort: "top", label: "device_entropy[32]", labelX: 892, labelY: 320, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837" },
   { from: "mash", to: "userHash", fromPort: "right", toPort: "left", label: "timing", labelX: 337, labelY: 448, source: SOURCE.mashEntropy, path: "firmware/shared/seed.py:730–790" },
   { from: "symbols", to: "userHash", fromPort: "right", toPort: "left", label: "ASCII", labelX: 337, labelY: 593, source: SOURCE.symbolEntropy, path: "firmware/shared/seed.py:672–728" },
   { from: "userHash", to: "mix", fromPort: "right", toPort: "left", label: "user_entropy[32]", labelX: 700, labelY: 500, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837" },
   { from: "context", to: "mix", fromPort: "right", toPort: "bottom", label: "CC\\x01S | purpose | method", labelX: 820, labelY: 600, source: SOURCE.constants, path: "firmware/shared/seed.py:39–55" },
-  { from: "mix", to: "words", fromPort: "right", toPort: "left", label: "16|32 B", labelX: 1125, labelY: 412, source: SOURCE.seedWords, path: "firmware/shared/seed.py:887–898" },
+  { from: "mix", to: "words", fromPort: "right", toPort: "left", label: "16|32 B", labelX: 1115, labelY: 412, source: SOURCE.seedWords, path: "firmware/shared/seed.py:887–898" },
   { from: "words", to: "bip39", fromPort: "bottom", toPort: "top", label: "mnemonic", labelX: 1385, labelY: 540, source: SOURCE.bip39Seed, path: "libngu/ngu/bip39.py:443–451" },
-  { from: "passphrase", to: "bip39", fromPort: "right", toPort: "left", label: "salt", labelX: 1347, labelY: 638, source: SOURCE.bip39Seed, path: "libngu/ngu/bip39.py:443–451" },
+  { from: "passphrase", to: "bip39", fromPort: "right", toPort: "left", label: "salt", labelX: 1342, labelY: 638, source: SOURCE.bip39Seed, path: "libngu/ngu/bip39.py:443–451" },
   { from: "bip39", to: "bip32", fromPort: "bottom", toPort: "top", label: "64 B", labelX: 1470, labelY: 727, source: SOURCE.bip32, path: "libngu/ngu/hdnode.c:359–386" }
 ];
 
@@ -295,7 +296,7 @@ function renderEdge(edge) {
     "marker-end": edge.control ? "url(#guard-arrow)" : "url(#arrow)"
   }));
 
-  const width = Math.max(48, edge.label.length * 6.3 + 16);
+  const width = Math.max(48, edge.label.length * 7 + 16);
   const label = svgElement("g", { class: "edge-label" });
   label.append(svgElement("rect", {
     x: edge.labelX - width / 2,
@@ -330,7 +331,7 @@ function renderNode(node) {
   });
   link.style.setProperty("--node-color", tone.color);
   link.style.setProperty("--node-glow", tone.glow);
-  link.style.setProperty("--expression-size", `${node.expressionSize || 10}px`);
+  link.style.setProperty("--expression-size", `${node.expressionSize || 11.2}px`);
 
   const title = svgElement("title");
   title.textContent = `${node.title} · ${node.path}`;
@@ -346,7 +347,7 @@ function renderNode(node) {
   titleLines.forEach((line, index) => {
     const span = svgElement("tspan", {
       x: node.x + 17,
-      dy: index === 0 ? 0 : 18
+      dy: index === 0 ? 0 : 20
     });
     span.textContent = line;
     titleText.append(span);
@@ -355,7 +356,7 @@ function renderNode(node) {
 
   const expression = svgElement("text", {
     x: node.x + 17,
-    y: node.y + 51 + (titleLines.length - 1) * 18,
+    y: node.y + 51 + (titleLines.length - 1) * 20,
     class: "node-expression"
   });
   const lines = Array.isArray(node.expression) ? node.expression : [node.expression];
