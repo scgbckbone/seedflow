@@ -114,10 +114,6 @@ const NODES = [
       {
         label: "SEED CALL", width: 70, href: SOURCE.secureElement1Call,
         kind: "SOURCE", path: "firmware/shared/seed.py:653"
-      },
-      {
-        label: "RESEED CALL", width: 82, href: SOURCE.secureElement1ReseedCall,
-        kind: "SOURCE", path: "firmware/shared/mk4.py:43"
       }
     ]
   },
@@ -135,10 +131,6 @@ const NODES = [
       {
         label: "SEED CALL", width: 70, href: SOURCE.secureElement2Call,
         kind: "SOURCE", path: "firmware/shared/seed.py:654"
-      },
-      {
-        label: "RESEED CALL", width: 82, href: SOURCE.secureElement2ReseedCall,
-        kind: "SOURCE", path: "firmware/shared/mk4.py:44"
       }
     ]
   },
@@ -161,6 +153,40 @@ const NODES = [
       {
         label: "RESEED IMPL", width: 90, href: SOURCE.randomReseed,
         kind: "SOURCE", path: "libngu/ngu/random.c:159–171"
+      }
+    ]
+  },
+  {
+    id: "se1Reseed", x: 1180, y: 155, w: 270, h: 110,
+    title: "Secure Element 1",
+    expression: "authenticated_random[32]",
+    path: "firmware/ae.c:694–714",
+    tone: "hardware", source: SOURCE.secureElement1,
+    links: [
+      {
+        label: "DISPATCH", width: 66, href: SOURCE.secureElement1Dispatch,
+        kind: "SOURCE", path: "firmware/dispatch.c:597–602"
+      },
+      {
+        label: "RESEED CALL", width: 82, href: SOURCE.secureElement1ReseedCall,
+        kind: "SOURCE", path: "firmware/shared/mk4.py:43"
+      }
+    ]
+  },
+  {
+    id: "se2Reseed", x: 1180, y: 285, w: 270, h: 110,
+    title: "Secure Element 2",
+    expression: "authenticated_random[8]",
+    path: "firmware/se2.c:1331–1347",
+    tone: "hardware", source: SOURCE.secureElement2,
+    links: [
+      {
+        label: "DISPATCH", width: 66, href: SOURCE.secureElement2Dispatch,
+        kind: "SOURCE", path: "firmware/dispatch.c:604–608"
+      },
+      {
+        label: "RESEED CALL", width: 82, href: SOURCE.secureElement2ReseedCall,
+        kind: "SOURCE", path: "firmware/shared/mk4.py:44"
       }
     ]
   },
@@ -269,10 +295,10 @@ const NODES = [
 const EDGES = [
   { from: "rngGate", to: "trng", fromPort: "right", toPort: "left", label: "required", labelX: 362, labelY: 54, source: SOURCE.rngSelftest, path: "firmware/stm32/COLDCARD_MK4/rng.c:180–210", control: true },
   { from: "trng", to: "mcuRandom", fromPort: "right", toPort: "left", label: "rng_get()", labelX: 710, labelY: 45, source: SOURCE.trngBackend, path: "libngu/ngu/random_backend.h:26–41" },
-  { from: "se1", to: "runtimeReseed", fromPort: "right", toPort: "left", label: "32 B", labelX: 710, labelY: 205, source: SOURCE.secureElement1ReseedCall, path: "firmware/shared/mk4.py:43" },
-  { from: "se2", to: "runtimeReseed", fromPort: "right", toPort: "left", label: "8 B", labelX: 710, labelY: 300, source: SOURCE.secureElement2ReseedCall, path: "firmware/shared/mk4.py:44" },
+  { from: "se1Reseed", to: "runtimeReseed", fromPort: "left", toPort: "right", label: "32 B", labelX: 1135, labelY: 190, source: SOURCE.secureElement1ReseedCall, path: "firmware/shared/mk4.py:43" },
+  { from: "se2Reseed", to: "runtimeReseed", fromPort: "left", toPort: "right", label: "8 B", labelX: 1135, labelY: 335, source: SOURCE.secureElement2ReseedCall, path: "firmware/shared/mk4.py:44" },
   { from: "runtimeReseed", to: "mcuRandom", fromPort: "top", toPort: "bottom", label: "startup reseed[32]", labelX: 1020, labelY: 165, source: SOURCE.randomReseed, path: "libngu/ngu/random.c:159–171" },
-  { from: "mcuRandom", to: "device", fromPort: "right", toPort: "right", label: "mcu_random[32]", labelX: 1200, labelY: 255, source: SOURCE.deviceEntropy, path: "firmware/shared/seed.py:646–659" },
+  { from: "mcuRandom", to: "device", fromPort: "right", toPort: "right", label: "mcu_random[32]", labelX: 1320, labelY: 70, source: SOURCE.deviceEntropy, path: "firmware/shared/seed.py:646–659", route: "M 1090 85 H 1515 Q 1535 85 1535 105 V 390 Q 1535 410 1515 410 H 1020" },
   { from: "se1", to: "device", fromPort: "right", toPort: "left", label: "32 B", labelX: 710, labelY: 330, source: SOURCE.secureElement1, path: "firmware/ae.c:694–714" },
   { from: "se2", to: "device", fromPort: "right", toPort: "left", label: "8 B", labelX: 710, labelY: 400, source: SOURCE.secureElement2, path: "firmware/se2.c:1331–1347" },
   { from: "device", to: "mix", fromPort: "bottom", toPort: "top", label: "device_entropy[32]", labelX: 1040, labelY: 480, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837" },
@@ -365,7 +391,7 @@ function renderEdge(edge) {
   const to = nodeMap.get(edge.to);
   const start = anchor(from, edge.fromPort);
   const end = anchor(to, edge.toPort);
-  const path = connector(start, end, edge.fromPort, edge.toPort);
+  const path = edge.route || connector(start, end, edge.fromPort, edge.toPort);
   const link = svgElement("a", {
     href: edge.source,
     target: "_blank",

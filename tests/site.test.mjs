@@ -77,10 +77,14 @@ test("every graph node and edge links directly to implementation source", async 
   const edgeCount = (edgeBlock.match(/\bfrom:/g) || []).length;
   const edgeSourceCount = (edgeBlock.match(/\bsource:/g) || []).length;
 
-  assert.equal(nodeCount, 16);
+  assert.equal(nodeCount, 18);
   assert.equal(nodeSourceCount, nodeCount);
   assert.equal(edgeCount, 17);
   assert.equal(edgeSourceCount, edgeCount);
+  assert.equal((nodeBlock.match(/title: "Secure Element 1"/g) || []).length, 2);
+  assert.equal((nodeBlock.match(/title: "Secure Element 2"/g) || []).length, 2);
+  assert.match(edgeBlock, /from: "se1Reseed", to: "runtimeReseed"/);
+  assert.match(edgeBlock, /from: "se2Reseed", to: "runtimeReseed"/);
   assert.doesNotMatch(edgeBlock, /label:\s*"SHA256d?"/);
   assert.match(edgeBlock, /label:\s*"required"[^}]+control:\s*true/);
   assert.doesNotMatch(nodeBlock, /source:\s*SOURCE\.pushButton/);
