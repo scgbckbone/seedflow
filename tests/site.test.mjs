@@ -32,8 +32,15 @@ test("graph exposes the technical construction", async () => {
   const app = await readSource("app.js");
 
   for (const fragment of [
-    "init = TRNG[128]",
-    "generate[32] XOR TRNG_fresh[32]",
+    "STM32 TRNG / rng_get()",
+    "RNG->DR → 32-bit word",
+    "DRDY ≤ 10 ms · ≤3 attempts",
+    "seed error / zero / timeout → EFAULT",
+    "ngu.random.bytes(32)",
+    "seed/reseed: 32 × rng_get() = 128 B",
+    "output[32] = Hash_DRBG-SHA256[32]",
+    "XOR 8 × rng_get()",
+    "zero / repeat / read failure → EFAULT",
     "APPLICATION START REQUIRES STM32 TRNG",
     'titleLines: ["APPLICATION START", "REQUIRES STM32 TRNG"]',
     "DRDY must appear within 10 ms",
@@ -66,9 +73,9 @@ test("every graph node and edge links directly to implementation source", async 
   const edgeCount = (edgeBlock.match(/\bfrom:/g) || []).length;
   const edgeSourceCount = (edgeBlock.match(/\bsource:/g) || []).length;
 
-  assert.equal(nodeCount, 14);
+  assert.equal(nodeCount, 15);
   assert.equal(nodeSourceCount, nodeCount);
-  assert.equal(edgeCount, 13);
+  assert.equal(edgeCount, 14);
   assert.equal(edgeSourceCount, edgeCount);
   assert.doesNotMatch(edgeBlock, /label:\s*"SHA256d?"/);
   assert.match(edgeBlock, /label:\s*"required"[^}]+control:\s*true/);
@@ -82,7 +89,10 @@ test("every graph node and edge links directly to implementation source", async 
   assert.match(app, /dispatch\.c#L604-L608/);
   assert.match(app, /shared\/numpad\.py#L61-L87/);
   assert.match(app, /COLDCARD_MK4\/rng\.c#L180-L210/);
+  assert.match(app, /COLDCARD_MK4\/rng\.c#L105-L167/);
   assert.match(app, /COLDCARD_MK4\/modckcc\.c#L282-L288/);
+  assert.match(app, /random_backend\.h#L26-L41/);
+  assert.match(app, /random\.c#L20-L93/);
   assert.match(app, /label: "CALL SITE"/);
   assert.match(app, /label: "IMPLEMENTATION"/);
   assert.doesNotMatch(app, /BOARD HOOK|MICROPYTHON INIT/);

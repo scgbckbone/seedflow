@@ -8,9 +8,11 @@ const SOURCE = Object.freeze({
   symbolEntropy: "https://github.com/Coldcard/firmware/blob/master/shared/seed.py#L672-L728",
   mashEntropy: "https://github.com/Coldcard/firmware/blob/master/shared/seed.py#L730-L790",
   mashTiming: "https://github.com/Coldcard/firmware/blob/master/shared/numpad.py#L61-L87",
+  rngHardware: "https://github.com/Coldcard/firmware/blob/master/stm32/COLDCARD_MK4/rng.c#L105-L167",
   rngSelftest: "https://github.com/Coldcard/firmware/blob/master/stm32/COLDCARD_MK4/rng.c#L180-L210",
   rngSelftestCall: "https://github.com/Coldcard/firmware/blob/master/stm32/COLDCARD_MK4/modckcc.c#L282-L288",
-  hashDrbg: "https://github.com/switck/libngu/blob/master/ngu/random.c#L41-L91",
+  trngBackend: "https://github.com/switck/libngu/blob/master/ngu/random_backend.h#L26-L41",
+  randomBytes: "https://github.com/switck/libngu/blob/master/ngu/random.c#L20-L93",
   secureElement1: "https://github.com/Coldcard/firmware/blob/master/stm32/mk4-bootloader/dispatch.c#L597-L602",
   secureElement2: "https://github.com/Coldcard/firmware/blob/master/stm32/mk4-bootloader/dispatch.c#L604-L608",
   seedWords: "https://github.com/Coldcard/firmware/blob/master/shared/seed.py#L887-L898",
@@ -59,28 +61,46 @@ const NODES = [
     ]
   },
   {
-    id: "trng", x: 400, y: 35, w: 270, h: 90,
-    title: "STM32 TRNG → Hash_DRBG",
-    expression: ["init = TRNG[128]", "generate[32] XOR TRNG_fresh[32]"],
-    path: "libngu/ngu/random.c:41–91",
-    tone: "hardware", source: SOURCE.hashDrbg
+    id: "trng", x: 400, y: 25, w: 270, h: 125,
+    title: "STM32 TRNG / rng_get()",
+    expression: [
+      "RNG->DR → 32-bit word",
+      "DRDY ≤ 10 ms · ≤3 attempts",
+      "seed error / zero / timeout → EFAULT"
+    ],
+    expressionSize: 10.1,
+    path: "firmware/rng.c:105–167",
+    tone: "hardware", source: SOURCE.rngHardware
   },
   {
-    id: "se1", x: 400, y: 160, w: 270, h: 90,
+    id: "mcuRandom", x: 750, y: 20, w: 340, h: 130,
+    title: "ngu.random.bytes(32)",
+    expression: [
+      "seed/reseed: 32 × rng_get() = 128 B",
+      "output[32] = Hash_DRBG-SHA256[32]",
+      "             XOR 8 × rng_get()",
+      "zero / repeat / read failure → EFAULT"
+    ],
+    expressionSize: 10.1,
+    path: "libngu/ngu/random.c:20–93",
+    tone: "process", source: SOURCE.randomBytes
+  },
+  {
+    id: "se1", x: 400, y: 175, w: 270, h: 90,
     title: "Secure Element 1",
     expression: "authenticated_random[32]",
     path: "firmware/dispatch.c:597–602",
     tone: "hardware", source: SOURCE.secureElement1
   },
   {
-    id: "se2", x: 400, y: 285, w: 270, h: 90,
+    id: "se2", x: 400, y: 300, w: 270, h: 90,
     title: "Secure Element 2",
     expression: "authenticated_random[8]",
     path: "firmware/dispatch.c:604–608",
     tone: "hardware", source: SOURCE.secureElement2
   },
   {
-    id: "device", x: 750, y: 160, w: 270, h: 100,
+    id: "device", x: 750, y: 180, w: 270, h: 100,
     title: "device_entropy[32]",
     expression: ["SHA256d(mcu_random[32] ||", "SE1[32] || SE2[8])"],
     path: "firmware/shared/seed.py:646–659",
@@ -183,9 +203,10 @@ const NODES = [
 
 const EDGES = [
   { from: "rngGate", to: "trng", fromPort: "right", toPort: "left", label: "required", labelX: 362, labelY: 54, source: SOURCE.rngSelftest, path: "firmware/stm32/COLDCARD_MK4/rng.c:180–210", control: true },
-  { from: "trng", to: "device", fromPort: "right", toPort: "left", label: "32 B", labelX: 710, labelY: 126, source: SOURCE.hashDrbg, path: "libngu/ngu/random.c:41–91" },
-  { from: "se1", to: "device", fromPort: "right", toPort: "left", label: "32 B", labelX: 710, labelY: 205, source: SOURCE.secureElement1, path: "firmware/dispatch.c:597–602" },
-  { from: "se2", to: "device", fromPort: "right", toPort: "left", label: "8 B", labelX: 710, labelY: 294, source: SOURCE.secureElement2, path: "firmware/dispatch.c:604–608" },
+  { from: "trng", to: "mcuRandom", fromPort: "right", toPort: "left", label: "rng_get()", labelX: 710, labelY: 45, source: SOURCE.trngBackend, path: "libngu/ngu/random_backend.h:26–41" },
+  { from: "mcuRandom", to: "device", fromPort: "bottom", toPort: "top", label: "mcu_random[32]", labelX: 1030, labelY: 165, source: SOURCE.deviceEntropy, path: "firmware/shared/seed.py:646–659" },
+  { from: "se1", to: "device", fromPort: "right", toPort: "left", label: "32 B", labelX: 710, labelY: 220, source: SOURCE.secureElement1, path: "firmware/dispatch.c:597–602" },
+  { from: "se2", to: "device", fromPort: "right", toPort: "left", label: "8 B", labelX: 710, labelY: 309, source: SOURCE.secureElement2, path: "firmware/dispatch.c:604–608" },
   { from: "device", to: "mix", fromPort: "bottom", toPort: "top", label: "device_entropy[32]", labelX: 892, labelY: 320, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837" },
   { from: "mash", to: "userHash", fromPort: "right", toPort: "left", label: "timing", labelX: 337, labelY: 448, source: SOURCE.mashEntropy, path: "firmware/shared/seed.py:730–790" },
   { from: "symbols", to: "userHash", fromPort: "right", toPort: "left", label: "ASCII", labelX: 337, labelY: 593, source: SOURCE.symbolEntropy, path: "firmware/shared/seed.py:672–728" },
