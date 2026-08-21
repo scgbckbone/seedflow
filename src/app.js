@@ -18,9 +18,14 @@ const SOURCE = Object.freeze({
   secureElement1: "https://github.com/Coldcard/firmware/blob/master/stm32/mk4-bootloader/ae.c#L694-L714",
   secureElement1Dispatch: "https://github.com/Coldcard/firmware/blob/master/stm32/mk4-bootloader/dispatch.c#L597-L602",
   secureElement1Call: "https://github.com/Coldcard/firmware/blob/master/shared/seed.py#L653",
+  secureElement1ReseedCall: "https://github.com/Coldcard/firmware/blob/master/shared/mk4.py#L43",
   secureElement2: "https://github.com/Coldcard/firmware/blob/master/stm32/mk4-bootloader/se2.c#L1331-L1347",
   secureElement2Dispatch: "https://github.com/Coldcard/firmware/blob/master/stm32/mk4-bootloader/dispatch.c#L604-L608",
   secureElement2Call: "https://github.com/Coldcard/firmware/blob/master/shared/seed.py#L654",
+  secureElement2ReseedCall: "https://github.com/Coldcard/firmware/blob/master/shared/mk4.py#L44",
+  runtimeReseed: "https://github.com/Coldcard/firmware/blob/master/shared/mk4.py#L39-L50",
+  runtimeReseedCall: "https://github.com/Coldcard/firmware/blob/master/shared/main.py#L52-L60",
+  randomReseed: "https://github.com/switck/libngu/blob/master/ngu/random.c#L159-L171",
   seedWords: "https://github.com/Coldcard/firmware/blob/master/shared/seed.py#L887-L898",
   bip39Words: "https://github.com/switck/libngu/blob/master/ngu/bip39.py#L318-L344",
   bip39Seed: "https://github.com/switck/libngu/blob/master/ngu/bip39.py#L443-L451",
@@ -86,7 +91,7 @@ const NODES = [
     id: "mcuRandom", x: 750, y: 20, w: 340, h: 130,
     title: "Hash_DRBG + fresh STM32 TRNG",
     expression: [
-      "seed/reseed: 32 × rng_get() = 128 B",
+      "TRNG init/auto-reseed: 32 × rng_get() = 128 B",
       "output[32] = Hash_DRBG-SHA256[32]",
       "             XOR 8 × rng_get()",
       "zero / repeat / read failure → EFAULT"
@@ -107,8 +112,12 @@ const NODES = [
         kind: "SOURCE", path: "firmware/dispatch.c:597–602"
       },
       {
-        label: "CALL SITE", width: 70, href: SOURCE.secureElement1Call,
+        label: "SEED CALL", width: 70, href: SOURCE.secureElement1Call,
         kind: "SOURCE", path: "firmware/shared/seed.py:653"
+      },
+      {
+        label: "RESEED CALL", width: 82, href: SOURCE.secureElement1ReseedCall,
+        kind: "SOURCE", path: "firmware/shared/mk4.py:43"
       }
     ]
   },
@@ -124,13 +133,39 @@ const NODES = [
         kind: "SOURCE", path: "firmware/dispatch.c:604–608"
       },
       {
-        label: "CALL SITE", width: 70, href: SOURCE.secureElement2Call,
+        label: "SEED CALL", width: 70, href: SOURCE.secureElement2Call,
         kind: "SOURCE", path: "firmware/shared/seed.py:654"
+      },
+      {
+        label: "RESEED CALL", width: 82, href: SOURCE.secureElement2ReseedCall,
+        kind: "SOURCE", path: "firmware/shared/mk4.py:44"
       }
     ]
   },
   {
-    id: "device", x: 750, y: 180, w: 270, h: 100,
+    id: "runtimeReseed", x: 750, y: 180, w: 340, h: 145,
+    title: "Secure-element startup reseed",
+    expression: [
+      "n[32] = SHA256d(SE1[32] || SE2[8])",
+      "ngu.random.reseed(n)",
+      "runs during early application startup"
+    ],
+    expressionSize: 10.1,
+    path: "firmware/shared/mk4.py:39–50",
+    tone: "process", source: SOURCE.runtimeReseed,
+    links: [
+      {
+        label: "BOOT CALL", width: 70, href: SOURCE.runtimeReseedCall,
+        kind: "SOURCE", path: "firmware/shared/main.py:52–60"
+      },
+      {
+        label: "RESEED IMPL", width: 90, href: SOURCE.randomReseed,
+        kind: "SOURCE", path: "libngu/ngu/random.c:159–171"
+      }
+    ]
+  },
+  {
+    id: "device", x: 750, y: 360, w: 270, h: 100,
     title: "device_entropy[32]",
     expression: ["SHA256d(mcu_random[32] ||", "SE1[32] || SE2[8])"],
     path: "firmware/shared/seed.py:646–659",
@@ -188,42 +223,42 @@ const NODES = [
     tone: "process", source: SOURCE.userEntropy
   },
   {
-    id: "context", x: 590, y: 640, w: 210, h: 90,
+    id: "context", x: 590, y: 680, w: 210, h: 90,
     title: "Context bytes",
     expression: ["b'CC\\x01S' || purpose", "|| method"],
     path: "firmware/shared/seed.py:39–55",
     tone: "context", source: SOURCE.constants
   },
   {
-    id: "mix", x: 800, y: 380, w: 280, h: 110,
+    id: "mix", x: 800, y: 500, w: 280, h: 110,
     title: "seed_entropy[32]",
     expression: ["SHA256d(context || device_entropy", "|| user_entropy)"],
     path: "firmware/shared/seed.py:792–837",
     tone: "process", source: SOURCE.seedMix
   },
   {
-    id: "words", x: 1150, y: 385, w: 260, h: 90,
+    id: "words", x: 1150, y: 505, w: 260, h: 90,
     title: "BIP39 mnemonic",
     expression: "16 B → 12 words · 32 B → 24 words",
     path: "libngu/ngu/bip39.py:318–344",
     tone: "standard", source: SOURCE.bip39Words
   },
   {
-    id: "passphrase", x: 1070, y: 610, w: 245, h: 90,
+    id: "passphrase", x: 1070, y: 650, w: 245, h: 90,
     title: "BIP39 passphrase",
     expression: "salt = mnemonic || passphrase",
     path: "libngu/ngu/bip39.py:443–451",
     tone: "human", source: SOURCE.bip39Seed
   },
   {
-    id: "bip39", x: 1370, y: 610, w: 205, h: 90,
+    id: "bip39", x: 1370, y: 650, w: 205, h: 90,
     title: "BIP39 seed[64]",
     expression: "PBKDF2-HMAC-SHA512 · 2048",
     path: "libngu/ngu/bip39.py:443–451",
     tone: "standard", source: SOURCE.bip39Seed
   },
   {
-    id: "bip32", x: 1325, y: 755, w: 250, h: 90,
+    id: "bip32", x: 1325, y: 790, w: 250, h: 90,
     title: "BIP32 root + children",
     expression: ["HMAC-SHA512(\"Bitcoin seed\",", "bip39_seed) → derive(path)"],
     path: "libngu/ngu/hdnode.c:359–554",
@@ -234,18 +269,21 @@ const NODES = [
 const EDGES = [
   { from: "rngGate", to: "trng", fromPort: "right", toPort: "left", label: "required", labelX: 362, labelY: 54, source: SOURCE.rngSelftest, path: "firmware/stm32/COLDCARD_MK4/rng.c:180–210", control: true },
   { from: "trng", to: "mcuRandom", fromPort: "right", toPort: "left", label: "rng_get()", labelX: 710, labelY: 45, source: SOURCE.trngBackend, path: "libngu/ngu/random_backend.h:26–41" },
-  { from: "mcuRandom", to: "device", fromPort: "bottom", toPort: "top", label: "mcu_random[32]", labelX: 1030, labelY: 165, source: SOURCE.deviceEntropy, path: "firmware/shared/seed.py:646–659" },
-  { from: "se1", to: "device", fromPort: "right", toPort: "left", label: "32 B", labelX: 710, labelY: 230, source: SOURCE.secureElement1, path: "firmware/ae.c:694–714" },
-  { from: "se2", to: "device", fromPort: "right", toPort: "left", label: "8 B", labelX: 710, labelY: 320, source: SOURCE.secureElement2, path: "firmware/se2.c:1331–1347" },
-  { from: "device", to: "mix", fromPort: "bottom", toPort: "top", label: "device_entropy[32]", labelX: 892, labelY: 320, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837" },
+  { from: "se1", to: "runtimeReseed", fromPort: "right", toPort: "left", label: "32 B", labelX: 710, labelY: 205, source: SOURCE.secureElement1ReseedCall, path: "firmware/shared/mk4.py:43" },
+  { from: "se2", to: "runtimeReseed", fromPort: "right", toPort: "left", label: "8 B", labelX: 710, labelY: 300, source: SOURCE.secureElement2ReseedCall, path: "firmware/shared/mk4.py:44" },
+  { from: "runtimeReseed", to: "mcuRandom", fromPort: "top", toPort: "bottom", label: "startup reseed[32]", labelX: 1020, labelY: 165, source: SOURCE.randomReseed, path: "libngu/ngu/random.c:159–171" },
+  { from: "mcuRandom", to: "device", fromPort: "right", toPort: "right", label: "mcu_random[32]", labelX: 1200, labelY: 255, source: SOURCE.deviceEntropy, path: "firmware/shared/seed.py:646–659" },
+  { from: "se1", to: "device", fromPort: "right", toPort: "left", label: "32 B", labelX: 710, labelY: 330, source: SOURCE.secureElement1, path: "firmware/ae.c:694–714" },
+  { from: "se2", to: "device", fromPort: "right", toPort: "left", label: "8 B", labelX: 710, labelY: 400, source: SOURCE.secureElement2, path: "firmware/se2.c:1331–1347" },
+  { from: "device", to: "mix", fromPort: "bottom", toPort: "top", label: "device_entropy[32]", labelX: 1040, labelY: 480, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837" },
   { from: "mash", to: "userHash", fromPort: "right", toPort: "left", label: "timing", labelX: 337, labelY: 448, source: SOURCE.mashEntropy, path: "firmware/shared/seed.py:730–790" },
   { from: "symbols", to: "userHash", fromPort: "right", toPort: "left", label: "ASCII", labelX: 337, labelY: 593, source: SOURCE.symbolEntropy, path: "firmware/shared/seed.py:672–728" },
   { from: "userHash", to: "mix", fromPort: "right", toPort: "left", label: "user_entropy[32]", labelX: 700, labelY: 500, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837" },
-  { from: "context", to: "mix", fromPort: "right", toPort: "bottom", label: "CC\\x01S | purpose | method", labelX: 820, labelY: 600, source: SOURCE.constants, path: "firmware/shared/seed.py:39–55" },
-  { from: "mix", to: "words", fromPort: "right", toPort: "left", label: "16|32 B", labelX: 1115, labelY: 412, source: SOURCE.seedWords, path: "firmware/shared/seed.py:887–898" },
-  { from: "words", to: "bip39", fromPort: "bottom", toPort: "top", label: "mnemonic", labelX: 1385, labelY: 540, source: SOURCE.bip39Seed, path: "libngu/ngu/bip39.py:443–451" },
-  { from: "passphrase", to: "bip39", fromPort: "right", toPort: "left", label: "salt", labelX: 1342, labelY: 638, source: SOURCE.bip39Seed, path: "libngu/ngu/bip39.py:443–451" },
-  { from: "bip39", to: "bip32", fromPort: "bottom", toPort: "top", label: "64 B", labelX: 1470, labelY: 727, source: SOURCE.bip32, path: "libngu/ngu/hdnode.c:359–386" }
+  { from: "context", to: "mix", fromPort: "right", toPort: "bottom", label: "CC\\x01S | purpose | method", labelX: 820, labelY: 655, source: SOURCE.constants, path: "firmware/shared/seed.py:39–55" },
+  { from: "mix", to: "words", fromPort: "right", toPort: "left", label: "16|32 B", labelX: 1115, labelY: 535, source: SOURCE.seedWords, path: "firmware/shared/seed.py:887–898" },
+  { from: "words", to: "bip39", fromPort: "bottom", toPort: "top", label: "mnemonic", labelX: 1385, labelY: 620, source: SOURCE.bip39Seed, path: "libngu/ngu/bip39.py:443–451" },
+  { from: "passphrase", to: "bip39", fromPort: "right", toPort: "left", label: "salt", labelX: 1342, labelY: 678, source: SOURCE.bip39Seed, path: "libngu/ngu/bip39.py:443–451" },
+  { from: "bip39", to: "bip32", fromPort: "bottom", toPort: "top", label: "64 B", labelX: 1470, labelY: 765, source: SOURCE.bip32, path: "libngu/ngu/hdnode.c:359–386" }
 ];
 
 const graph = document.querySelector("#seed-graph");

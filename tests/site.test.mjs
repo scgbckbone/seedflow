@@ -37,10 +37,14 @@ test("graph exposes the technical construction", async () => {
     "DRDY ≤ 10 ms · ≤3 attempts",
     "seed error / zero / timeout → EFAULT",
     "Hash_DRBG + fresh STM32 TRNG",
-    "seed/reseed: 32 × rng_get() = 128 B",
+    "TRNG init/auto-reseed: 32 × rng_get() = 128 B",
     "output[32] = Hash_DRBG-SHA256[32]",
     "XOR 8 × rng_get()",
     "zero / repeat / read failure → EFAULT",
+    "Secure-element startup reseed",
+    "n[32] = SHA256d(SE1[32] || SE2[8])",
+    "ngu.random.reseed(n)",
+    "runs during early application startup",
     "APPLICATION START REQUIRES STM32 TRNG",
     'titleLines: ["APPLICATION START", "REQUIRES STM32 TRNG"]',
     "DRDY must appear within 10 ms",
@@ -73,9 +77,9 @@ test("every graph node and edge links directly to implementation source", async 
   const edgeCount = (edgeBlock.match(/\bfrom:/g) || []).length;
   const edgeSourceCount = (edgeBlock.match(/\bsource:/g) || []).length;
 
-  assert.equal(nodeCount, 15);
+  assert.equal(nodeCount, 16);
   assert.equal(nodeSourceCount, nodeCount);
-  assert.equal(edgeCount, 14);
+  assert.equal(edgeCount, 17);
   assert.equal(edgeSourceCount, edgeCount);
   assert.doesNotMatch(edgeBlock, /label:\s*"SHA256d?"/);
   assert.match(edgeBlock, /label:\s*"required"[^}]+control:\s*true/);
@@ -91,6 +95,11 @@ test("every graph node and edge links directly to implementation source", async 
   assert.match(app, /se2\.c#L1331-L1347/);
   assert.match(app, /shared\/seed\.py#L653/);
   assert.match(app, /shared\/seed\.py#L654/);
+  assert.match(app, /shared\/mk4\.py#L39-L50/);
+  assert.match(app, /shared\/mk4\.py#L43/);
+  assert.match(app, /shared\/mk4\.py#L44/);
+  assert.match(app, /shared\/main\.py#L52-L60/);
+  assert.match(app, /random\.c#L159-L171/);
   assert.match(app, /shared\/numpad\.py#L61-L87/);
   assert.match(app, /COLDCARD_MK4\/rng\.c#L180-L210/);
   assert.match(app, /COLDCARD_MK4\/rng\.c#L105-L167/);
@@ -102,6 +111,10 @@ test("every graph node and edge links directly to implementation source", async 
   assert.match(app, /label: "CALL SITE"/);
   assert.match(app, /label: "BOARD HOOK"/);
   assert.match(app, /label: "MICROPYTHON INIT"/);
+  assert.match(app, /label: "SEED CALL"/);
+  assert.match(app, /label: "RESEED CALL"/);
+  assert.match(app, /label: "BOOT CALL"/);
+  assert.match(app, /label: "RESEED IMPL"/);
   assert.doesNotMatch(app, /label: "IMPLEMENTATION"/);
   assert.match(app, /https:\/\/github\.com\/Coldcard\/firmware/);
   assert.match(app, /https:\/\/github\.com\/switck\/libngu/);
