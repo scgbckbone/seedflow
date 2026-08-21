@@ -8,6 +8,10 @@ const SOURCE = Object.freeze({
   symbolEntropy: "https://github.com/Coldcard/firmware/blob/master/shared/seed.py#L672-L728",
   mashEntropy: "https://github.com/Coldcard/firmware/blob/master/shared/seed.py#L730-L790",
   mashTiming: "https://github.com/Coldcard/firmware/blob/master/shared/numpad.py#L61-L87",
+  rngSelftest: "https://github.com/Coldcard/firmware/blob/master/stm32/COLDCARD_MK4/rng.c#L180-L210",
+  rngSelftestCall: "https://github.com/Coldcard/firmware/blob/master/stm32/COLDCARD_MK4/modckcc.c#L282-L288",
+  rngBoardHook: "https://github.com/Coldcard/firmware/blob/master/stm32/COLDCARD_MK4/mpconfigboard.h#L83-L84",
+  micropythonInit: "https://github.com/Coldcard/micropython/blob/4107246f8a080807b62c3b4838e71e812ea68b6f/ports/stm32/main.c#L395",
   hashDrbg: "https://github.com/switck/libngu/blob/master/ngu/random.c#L41-L91",
   secureElement1: "https://github.com/Coldcard/firmware/blob/master/stm32/mk4-bootloader/dispatch.c#L597-L602",
   secureElement2: "https://github.com/Coldcard/firmware/blob/master/stm32/mk4-bootloader/dispatch.c#L604-L608",
@@ -24,12 +28,40 @@ const TONES = Object.freeze({
   hardware: { color: "#ff8a00", glow: "rgb(255 138 0 / 25%)" },
   human: { color: "#8be28b", glow: "rgb(139 226 139 / 24%)" },
   process: { color: "#6ed5ff", glow: "rgb(110 213 255 / 24%)" },
+  guard: { color: "#ff6868", glow: "rgb(255 104 104 / 25%)" },
   context: { color: "#c5a3ff", glow: "rgb(197 163 255 / 24%)" },
   result: { color: "#ffcc00", glow: "rgb(255 204 0 / 28%)" },
   standard: { color: "#f5f2de", glow: "rgb(245 242 222 / 18%)" }
 });
 
 const NODES = [
+  {
+    id: "rngGate", x: 370, y: 5, w: 390, h: 160,
+    title: "APPLICATION START REQUIRES STM32 TRNG",
+    expression: [
+      "DRDY must appear within 10 ms",
+      "8 reads must reach hardware rng_get()",
+      "missing TRNG or wrong linkage → __fatal_error()",
+      "Python and COLDCARD UI do not start"
+    ],
+    expressionSize: 9,
+    path: "firmware/stm32/COLDCARD_MK4/rng.c:180–210",
+    tone: "guard", source: SOURCE.rngSelftest,
+    links: [
+      {
+        label: "CALL SITE", width: 70, href: SOURCE.rngSelftestCall,
+        kind: "SOURCE", path: "firmware/modckcc.c:282–288"
+      },
+      {
+        label: "BOARD HOOK", width: 82, href: SOURCE.rngBoardHook,
+        kind: "SOURCE", path: "firmware/mpconfigboard.h:83–84"
+      },
+      {
+        label: "MICROPYTHON INIT", width: 112, href: SOURCE.micropythonInit,
+        kind: "SOURCE", path: "Coldcard/micropython · main.c:395"
+      }
+    ]
+  },
   {
     id: "trng", x: 25, y: 40, w: 250, h: 90,
     title: "STM32 TRNG → Hash_DRBG",
@@ -52,7 +84,7 @@ const NODES = [
     tone: "hardware", source: SOURCE.secureElement2
   },
   {
-    id: "device", x: 370, y: 150, w: 270, h: 100,
+    id: "device", x: 370, y: 185, w: 270, h: 100,
     title: "device_entropy[32]",
     expression: ["SHA256d(mcu_random[32] ||", "SE1[32] || SE2[8])"],
     path: "firmware/shared/seed.py:646–659",
@@ -154,8 +186,9 @@ const NODES = [
 ];
 
 const EDGES = [
-  { from: "trng", to: "device", fromPort: "right", toPort: "left", label: "32 B", labelX: 322, labelY: 107, source: SOURCE.hashDrbg, path: "libngu/ngu/random.c:41–91" },
-  { from: "se1", to: "device", fromPort: "right", toPort: "left", label: "32 B", labelX: 322, labelY: 178, source: SOURCE.secureElement1, path: "firmware/dispatch.c:597–602" },
+  { from: "rngGate", to: "trng", fromPort: "left", toPort: "right", label: "required", labelX: 322, labelY: 65, source: SOURCE.rngSelftest, path: "firmware/stm32/COLDCARD_MK4/rng.c:180–210", control: true },
+  { from: "trng", to: "device", fromPort: "right", toPort: "left", label: "32 B", labelX: 322, labelY: 112, source: SOURCE.hashDrbg, path: "libngu/ngu/random.c:41–91" },
+  { from: "se1", to: "device", fromPort: "right", toPort: "left", label: "32 B", labelX: 322, labelY: 188, source: SOURCE.secureElement1, path: "firmware/dispatch.c:597–602" },
   { from: "se2", to: "device", fromPort: "right", toPort: "left", label: "8 B", labelX: 322, labelY: 286, source: SOURCE.secureElement2, path: "firmware/dispatch.c:604–608" },
   { from: "device", to: "mix", fromPort: "bottom", toPort: "top", label: "device_entropy[32]", labelX: 720, labelY: 300, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837" },
   { from: "mash", to: "userHash", fromPort: "right", toPort: "left", label: "timing", labelX: 337, labelY: 448, source: SOURCE.mashEntropy, path: "firmware/shared/seed.py:730–790" },
@@ -230,6 +263,15 @@ function renderDefinitions() {
   });
   marker.append(svgElement("path", { d: "M 0 0 L 8 4 L 0 8 z", fill: "#696953" }));
   defs.append(marker);
+
+  const guardMarker = svgElement("marker", {
+    id: "guard-arrow", markerWidth: 8, markerHeight: 8, refX: 7, refY: 4,
+    orient: "auto", markerUnits: "strokeWidth"
+  });
+  guardMarker.append(svgElement("path", {
+    d: "M 0 0 L 8 4 L 0 8 z", fill: "#ff6868"
+  }));
+  defs.append(guardMarker);
   graph.append(defs);
 }
 
@@ -243,7 +285,7 @@ function renderEdge(edge) {
     href: edge.source,
     target: "_blank",
     rel: "noreferrer",
-    class: "edge-link",
+    class: edge.control ? "edge-link control-link" : "edge-link",
     tabindex: "0",
     "aria-label": `${from.title} to ${to.title}: open implementation source`
   });
@@ -252,7 +294,11 @@ function renderEdge(edge) {
   title.textContent = `${from.title} → ${to.title} · ${edge.path}`;
   link.append(title);
   link.append(svgElement("path", { d: path, class: "edge-hit" }));
-  link.append(svgElement("path", { d: path, class: "flow-edge", "marker-end": "url(#arrow)" }));
+  link.append(svgElement("path", {
+    d: path,
+    class: edge.control ? "flow-edge is-control" : "flow-edge",
+    "marker-end": edge.control ? "url(#guard-arrow)" : "url(#arrow)"
+  }));
 
   const width = Math.max(48, edge.label.length * 6.3 + 16);
   const label = svgElement("g", { class: "edge-label" });

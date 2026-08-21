@@ -34,6 +34,11 @@ test("graph exposes the technical construction", async () => {
   for (const fragment of [
     "init = TRNG[128]",
     "generate[32] XOR TRNG_fresh[32]",
+    "APPLICATION START REQUIRES STM32 TRNG",
+    "DRDY must appear within 10 ms",
+    "8 reads must reach hardware rng_get()",
+    "missing TRNG or wrong linkage → __fatal_error()",
+    "Python and COLDCARD UI do not start",
     "SHA256d(mcu_random[32] ||",
     "65 presses → 64 gaps × 2 credited bits",
     "key bytes mixed · 0 credited bits",
@@ -59,11 +64,12 @@ test("every graph node and edge links directly to implementation source", async 
   const edgeCount = (edgeBlock.match(/\bfrom:/g) || []).length;
   const edgeSourceCount = (edgeBlock.match(/\bsource:/g) || []).length;
 
-  assert.equal(nodeCount, 13);
+  assert.equal(nodeCount, 14);
   assert.equal(nodeSourceCount, nodeCount);
-  assert.equal(edgeCount, 12);
+  assert.equal(edgeCount, 13);
   assert.equal(edgeSourceCount, edgeCount);
   assert.doesNotMatch(edgeBlock, /label:\s*"SHA256d?"/);
+  assert.match(edgeBlock, /label:\s*"required"[^}]+control:\s*true/);
   assert.doesNotMatch(nodeBlock, /source:\s*SOURCE\.pushButton/);
   assert.doesNotMatch(edgeBlock, /source:\s*SOURCE\.pushButton/);
   assert.match(app, /href: node\.source/);
@@ -73,6 +79,10 @@ test("every graph node and edge links directly to implementation source", async 
   assert.match(app, /dispatch\.c#L597-L602/);
   assert.match(app, /dispatch\.c#L604-L608/);
   assert.match(app, /shared\/numpad\.py#L61-L87/);
+  assert.match(app, /COLDCARD_MK4\/rng\.c#L180-L210/);
+  assert.match(app, /COLDCARD_MK4\/modckcc\.c#L282-L288/);
+  assert.match(app, /COLDCARD_MK4\/mpconfigboard\.h#L83-L84/);
+  assert.match(app, /Coldcard\/micropython\/blob\/4107246f/);
   assert.match(app, /https:\/\/github\.com\/Coldcard\/firmware/);
   assert.match(app, /https:\/\/github\.com\/switck\/libngu/);
 });

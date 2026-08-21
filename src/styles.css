@@ -160,6 +160,19 @@ body {
   transition: stroke 120ms ease, stroke-width 120ms ease, filter 120ms ease;
 }
 
+.flow-edge.is-control {
+  stroke: #ff6868;
+  stroke-dasharray: 6 6;
+}
+
+.control-link .edge-label rect {
+  stroke: #8c4a4a;
+}
+
+.control-link .edge-label text {
+  fill: #ff9494;
+}
+
 .edge-hit {
   fill: none;
   stroke: transparent;
