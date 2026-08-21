@@ -44,7 +44,7 @@ const TONES = Object.freeze({
 
 const LANES = [
   {
-    label: "RUNTIME RNG INITIALIZATION",
+    label: "STARTUP RNG INITIALIZATION",
     x: 15, y: 7, w: 270, h: 26,
     lineX: 285, lineY: 20,
     bandY: 0, bandH: 330, variant: "runtime",

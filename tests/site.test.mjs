@@ -45,7 +45,7 @@ test("graph exposes the technical construction", async () => {
     "SE entropy → Hash_DRBG reseed",
     "Hash_DRBG.Reseed(",
     "SHA256d(SE1[32] || SE2[8]))",
-    "RUNTIME RNG INITIALIZATION",
+    "STARTUP RNG INITIALIZATION",
     "MASTER-SEED GENERATION",
     "1  DEVICE ENTROPY",
     "2  REQUIRED USER INPUT",
