@@ -199,14 +199,14 @@ const NODES = [
     ]
   },
   {
-    id: "device", x: 350, y: 555, w: 270, h: 100,
+    id: "device", x: 500, y: 380, w: 280, h: 100,
     title: "device_entropy[32]",
     expression: ["SHA256d(mcu_random[32] ||", "SE1[32] || SE2[8])"],
     path: "firmware/shared/seed.py:646–659",
     tone: "process", source: SOURCE.deviceEntropy
   },
   {
-    id: "mash", x: 650, y: 400, w: 280, h: 190,
+    id: "mash", x: 500, y: 500, w: 280, h: 190,
     title: "Mash Keys",
     expression: [
       "≥65 presses; raw timing before debounce",
@@ -236,7 +236,7 @@ const NODES = [
     ]
   },
   {
-    id: "symbols", x: 650, y: 635, w: 280, h: 145,
+    id: "symbols", x: 500, y: 710, w: 280, h: 145,
     title: "Dice Rolls / Coin Flips",
     expression: [
       "≥50 die rolls or ≥128 coin flips",
@@ -256,7 +256,7 @@ const NODES = [
     ]
   },
   {
-    id: "mix", x: 960, y: 550, w: 270, h: 110,
+    id: "mix", x: 900, y: 550, w: 270, h: 110,
     title: "seed_entropy[32]",
     expression: [
       "SHA256d(b'CC\\x01S' || purpose",
@@ -268,7 +268,7 @@ const NODES = [
     tone: "process", source: SOURCE.seedMix
   },
   {
-    id: "words", x: 1325, y: 560, w: 250, h: 90,
+    id: "words", x: 1250, y: 560, w: 250, h: 90,
     title: "BIP39 mnemonic",
     expression: "16 B → 12 words · 32 B → 24 words",
     path: "libngu/ngu/bip39.py:318–344",
@@ -279,14 +279,14 @@ const NODES = [
 const EDGES = [
   { from: "se1Reseed", to: "runtimeReseed", fromPort: "right", toPort: "left", label: "32 B", labelX: 772, labelY: 80, source: SOURCE.secureElement1ReseedCall, path: "firmware/shared/mk4.py:43" },
   { from: "se2Reseed", to: "runtimeReseed", fromPort: "right", toPort: "left", label: "8 B", labelX: 772, labelY: 248, source: SOURCE.secureElement2ReseedCall, path: "firmware/shared/mk4.py:44" },
-  { from: "runtimeReseed", to: "mcuRandom", fromPort: "bottom", toPort: "top", label: "reseeded state", labelX: 800, labelY: 298, source: SOURCE.randomReseed, path: "libngu/ngu/random.c:159–171", route: "M 982.5 235 V 305 H 630 V 380 H 175 V 400" },
-  { from: "mcuRandom", to: "device", fromPort: "right", toPort: "top", label: "mcu_random[32]", labelX: 430, labelY: 540, source: SOURCE.deviceEntropy, path: "firmware/shared/seed.py:646–659", route: "M 325 472.5 H 340 Q 350 472.5 350 482.5 V 535 H 485 V 555" },
-  { from: "se1", to: "device", fromPort: "right", toPort: "left", label: "32 B", labelX: 323, labelY: 580, source: SOURCE.secureElement1, path: "firmware/ae.c:694–714" },
-  { from: "se2", to: "device", fromPort: "right", toPort: "left", label: "8 B", labelX: 320, labelY: 700, source: SOURCE.secureElement2, path: "firmware/se2.c:1331–1347", route: "M 295 740 H 320 V 630 Q 320 605 345 605 H 350" },
-  { from: "device", to: "mix", fromPort: "right", toPort: "left", label: "device_entropy[32]", labelX: 790, labelY: 605, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837", route: "M 620 605 H 960" },
-  { from: "mash", to: "mix", fromPort: "right", toPort: "top", label: "if Mash selected", labelX: 1005, labelY: 495, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837", route: "M 930 495 H 1075 Q 1095 495 1095 515 V 550" },
-  { from: "symbols", to: "mix", fromPort: "right", toPort: "bottom", label: "if Dice/Coin selected", labelX: 1005, labelY: 707.5, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837", route: "M 930 707.5 H 1075 Q 1095 707.5 1095 687.5 V 660" },
-  { from: "mix", to: "words", fromPort: "right", toPort: "left", label: "16|32 B", labelX: 1275, labelY: 605, source: SOURCE.seedWords, path: "firmware/shared/seed.py:887–898" }
+  { from: "runtimeReseed", to: "mcuRandom", fromPort: "bottom", toPort: "top", label: "reseeded state", labelX: 800, labelY: 298, source: SOURCE.randomReseed, path: "libngu/ngu/random.c:159–171", route: "M 982.5 235 V 305 H 470 V 380 H 175 V 400" },
+  { from: "mcuRandom", to: "device", fromPort: "right", toPort: "left", label: "mcu_random[32]", labelX: 410, labelY: 500, source: SOURCE.deviceEntropy, path: "firmware/shared/seed.py:646–659", route: "M 325 472.5 C 400 472.5 425 405 500 405" },
+  { from: "se1", to: "device", fromPort: "right", toPort: "left", label: "32 B", labelX: 410, labelY: 545, source: SOURCE.secureElement1, path: "firmware/ae.c:694–714", route: "M 295 615 C 390 615 405 430 500 430" },
+  { from: "se2", to: "device", fromPort: "right", toPort: "left", label: "8 B", labelX: 400, labelY: 680, source: SOURCE.secureElement2, path: "firmware/se2.c:1331–1347", route: "M 295 740 C 390 740 405 455 500 455" },
+  { from: "device", to: "mix", fromPort: "right", toPort: "top", label: "always included", labelX: 900, labelY: 430, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837", route: "M 780 430 H 1015 Q 1035 430 1035 450 V 550" },
+  { from: "mash", to: "mix", fromPort: "right", toPort: "left", label: "if Mash selected", labelX: 840, labelY: 595, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837", route: "M 780 595 H 900" },
+  { from: "symbols", to: "mix", fromPort: "right", toPort: "bottom", label: "if Dice/Coin selected", labelX: 900, labelY: 782.5, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837", route: "M 780 782.5 H 1015 Q 1035 782.5 1035 762.5 V 660" },
+  { from: "mix", to: "words", fromPort: "right", toPort: "left", label: "16|32 B", labelX: 1210, labelY: 605, source: SOURCE.seedWords, path: "firmware/shared/seed.py:887–898" }
 ];
 
 const graph = document.querySelector("#seed-graph");
