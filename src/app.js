@@ -9,14 +9,15 @@ const SOURCE = Object.freeze({
   mashEntropy: "https://github.com/Coldcard/firmware/blob/master/shared/seed.py#L730-L790",
   mashTiming: "https://github.com/Coldcard/firmware/blob/master/shared/numpad.py#L61-L87",
   hashDrbg: "https://github.com/switck/libngu/blob/master/ngu/random.c#L41-L91",
-  secureElements: "https://github.com/Coldcard/firmware/blob/master/stm32/mk4-bootloader/dispatch.c#L592-L608",
+  secureElement1: "https://github.com/Coldcard/firmware/blob/master/stm32/mk4-bootloader/dispatch.c#L597-L602",
+  secureElement2: "https://github.com/Coldcard/firmware/blob/master/stm32/mk4-bootloader/dispatch.c#L604-L608",
   seedWords: "https://github.com/Coldcard/firmware/blob/master/shared/seed.py#L887-L968",
   bip39Words: "https://github.com/switck/libngu/blob/master/ngu/bip39.py#L318-L344",
   bip39Seed: "https://github.com/switck/libngu/blob/master/ngu/bip39.py#L443-L451",
   bip32: "https://github.com/switck/libngu/blob/master/ngu/hdnode.c#L359-L386",
   bip32Children: "https://github.com/switck/libngu/blob/master/ngu/hdnode.c#L359-L554",
   pushButton: "https://petertodd.org/2014/push-button-rng",
-  masterSeedDocs: "https://coldcard.com/docs/master-seed"
+  masterSeedDocs: "https://coldcard.com/docs/master-seed/#create-a-new-master-seed"
 });
 
 const TONES = Object.freeze({
@@ -40,15 +41,15 @@ const NODES = [
     id: "se1", x: 25, y: 150, w: 250, h: 90,
     title: "Secure Element 1",
     expression: "authenticated_random[32]",
-    path: "firmware/dispatch.c:592–608",
-    tone: "hardware", source: SOURCE.secureElements
+    path: "firmware/dispatch.c:597–602",
+    tone: "hardware", source: SOURCE.secureElement1
   },
   {
     id: "se2", x: 25, y: 260, w: 250, h: 90,
     title: "Secure Element 2",
     expression: "authenticated_random[8]",
-    path: "firmware/dispatch.c:592–608",
-    tone: "hardware", source: SOURCE.secureElements
+    path: "firmware/dispatch.c:604–608",
+    tone: "hardware", source: SOURCE.secureElement2
   },
   {
     id: "deviceHash", x: 330, y: 150, w: 200, h: 90,
@@ -168,8 +169,8 @@ const NODES = [
 
 const EDGES = [
   { from: "trng", to: "deviceHash", fromPort: "right", toPort: "left", label: "32 B", labelX: 300, labelY: 107, source: SOURCE.hashDrbg, path: "libngu/ngu/random.c:41–91" },
-  { from: "se1", to: "deviceHash", fromPort: "right", toPort: "left", label: "32 B", labelX: 302, labelY: 178, source: SOURCE.secureElements, path: "firmware/dispatch.c:592–608" },
-  { from: "se2", to: "deviceHash", fromPort: "right", toPort: "left", label: "8 B", labelX: 300, labelY: 286, source: SOURCE.secureElements, path: "firmware/dispatch.c:592–608" },
+  { from: "se1", to: "deviceHash", fromPort: "right", toPort: "left", label: "32 B", labelX: 302, labelY: 178, source: SOURCE.secureElement1, path: "firmware/dispatch.c:597–602" },
+  { from: "se2", to: "deviceHash", fromPort: "right", toPort: "left", label: "8 B", labelX: 300, labelY: 286, source: SOURCE.secureElement2, path: "firmware/dispatch.c:604–608" },
   { from: "deviceHash", to: "device", fromPort: "right", toPort: "left", label: "SHA256d", labelX: 560, labelY: 178, source: SOURCE.deviceEntropy, path: "firmware/shared/seed.py:646–659" },
   { from: "device", to: "mix", fromPort: "bottom", toPort: "top", label: "device[32]", labelX: 805, labelY: 300, source: SOURCE.seed, path: "firmware/shared/seed.py:646–850" },
   { from: "mash", to: "userHash", fromPort: "right", toPort: "left", label: "timing", labelX: 337, labelY: 448, source: SOURCE.mashEntropy, path: "firmware/shared/seed.py:730–790" },

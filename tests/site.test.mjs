@@ -68,7 +68,9 @@ test("every graph node and edge links directly to implementation source", async 
   assert.match(app, /href: node\.source/);
   assert.match(app, /href: edge\.source/);
   assert.match(app, /https:\/\/petertodd\.org\/2014\/push-button-rng/);
-  assert.match(app, /https:\/\/coldcard\.com\/docs\/master-seed/);
+  assert.match(app, /https:\/\/coldcard\.com\/docs\/master-seed\/#create-a-new-master-seed/);
+  assert.match(app, /dispatch\.c#L597-L602/);
+  assert.match(app, /dispatch\.c#L604-L608/);
   assert.match(app, /shared\/numpad\.py#L61-L87/);
   assert.match(app, /https:\/\/github\.com\/Coldcard\/firmware/);
   assert.match(app, /https:\/\/github\.com\/switck\/libngu/);
