@@ -111,23 +111,45 @@ body {
   cursor: alias;
 }
 
-.lane-divider {
-  stroke: #3a3a2d;
+.lane-band {
+  pointer-events: none;
+}
+
+.lane-band-runtime {
+  fill: rgb(110 213 255 / 3%);
+}
+
+.lane-band-generation {
+  fill: rgb(255 204 0 / 2.6%);
+}
+
+.lane-header {
+  fill: #151510;
+  stroke: #5b5a45;
   stroke-width: 1;
-  stroke-dasharray: 3 7;
+  vector-effect: non-scaling-stroke;
+  transition: fill 120ms ease, stroke 120ms ease;
+}
+
+.lane-divider {
+  stroke: #5b5a45;
+  stroke-width: 1.5;
+  stroke-dasharray: 5 7;
   vector-effect: non-scaling-stroke;
   transition: stroke 120ms ease;
 }
 
 .lane-label {
-  fill: var(--dim);
+  fill: var(--ink);
   font-family: var(--mono);
-  font-size: 9px;
-  font-weight: 650;
-  letter-spacing: 0.14em;
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.11em;
   transition: fill 120ms ease;
 }
 
+.lane-link:hover .lane-header,
+.lane-link:focus .lane-header,
 .lane-link:hover .lane-divider,
 .lane-link:focus .lane-divider {
   stroke: var(--yellow);

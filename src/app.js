@@ -2,7 +2,6 @@ const SVG_NS = "http://www.w3.org/2000/svg";
 
 const SOURCE = Object.freeze({
   seedMix: "https://github.com/Coldcard/firmware/blob/master/shared/seed.py#L792-L837",
-  constants: "https://github.com/Coldcard/firmware/blob/master/shared/seed.py#L39-L55",
   deviceEntropy: "https://github.com/Coldcard/firmware/blob/master/shared/seed.py#L646-L659",
   userEntropy: "https://github.com/Coldcard/firmware/blob/master/shared/seed.py#L688-L790",
   symbolEntropy: "https://github.com/Coldcard/firmware/blob/master/shared/seed.py#L672-L728",
@@ -40,21 +39,24 @@ const TONES = Object.freeze({
   human: { color: "#8be28b", glow: "rgb(139 226 139 / 24%)" },
   process: { color: "#6ed5ff", glow: "rgb(110 213 255 / 24%)" },
   guard: { color: "#ff6868", glow: "rgb(255 104 104 / 25%)" },
-  context: { color: "#c5a3ff", glow: "rgb(197 163 255 / 24%)" },
   result: { color: "#ffcc00", glow: "rgb(255 204 0 / 28%)" },
   standard: { color: "#f5f2de", glow: "rgb(245 242 222 / 18%)" }
 });
 
 const LANES = [
   {
-    label: "RUNTIME RNG INITIALIZATION", x: 400, y: 25,
-    lineX: 610, lineY: 20,
+    label: "RUNTIME RNG INITIALIZATION",
+    x: 390, y: 7, w: 270, h: 26,
+    lineX: 660, lineY: 20,
+    bandY: 0, bandH: 475, variant: "runtime",
     source: SOURCE.runtimeReseedCall,
     path: "firmware/shared/main.py:52–60"
   },
   {
-    label: "MASTER-SEED GENERATION", x: 25, y: 482,
-    lineX: 215, lineY: 475,
+    label: "MASTER-SEED GENERATION",
+    x: 15, y: 462, w: 220, h: 26,
+    lineX: 235, lineY: 475,
+    bandY: 475, bandH: 425, variant: "generation",
     source: SOURCE.seedMix,
     path: "firmware/shared/seed.py:792–837"
   }
@@ -264,16 +266,13 @@ const NODES = [
     tone: "process", source: SOURCE.userEntropy
   },
   {
-    id: "context", x: 750, y: 680, w: 210, h: 90,
-    title: "Context bytes",
-    expression: ["b'CC\\x01S' || purpose", "|| method"],
-    path: "firmware/shared/seed.py:39–55",
-    tone: "context", source: SOURCE.constants
-  },
-  {
     id: "mix", x: 1025, y: 550, w: 270, h: 110,
     title: "seed_entropy[32]",
-    expression: ["SHA256d(context || device_entropy", "|| user_entropy)"],
+    expression: [
+      "SHA256d(b'CC\\x01S' || purpose",
+      "|| method || device_entropy",
+      "|| user_entropy)"
+    ],
     path: "firmware/shared/seed.py:792–837",
     tone: "process", source: SOURCE.seedMix
   },
@@ -320,7 +319,6 @@ const EDGES = [
   { from: "mash", to: "userHash", fromPort: "right", toPort: "left", label: "timing", labelX: 347, labelY: 640, source: SOURCE.mashEntropy, path: "firmware/shared/seed.py:730–790" },
   { from: "symbols", to: "userHash", fromPort: "right", toPort: "left", label: "ASCII", labelX: 347, labelY: 732, source: SOURCE.symbolEntropy, path: "firmware/shared/seed.py:672–728" },
   { from: "userHash", to: "mix", fromPort: "right", toPort: "left", label: "user_entropy[32]", labelX: 815, labelY: 820, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837", route: "M 630 800 H 980 Q 1005 800 1005 775 V 630 Q 1005 605 1025 605" },
-  { from: "context", to: "mix", fromPort: "top", toPort: "left", label: "CC\\x01S | purpose | method", labelX: 905, labelY: 653, source: SOURCE.constants, path: "firmware/shared/seed.py:39–55", route: "M 855 680 C 855 640, 985 605, 1025 605" },
   { from: "mix", to: "words", fromPort: "right", toPort: "left", label: "16|32 B", labelX: 1310, labelY: 533, source: SOURCE.seedWords, path: "firmware/shared/seed.py:887–898" },
   { from: "words", to: "bip39", fromPort: "bottom", toPort: "top", label: "mnemonic", labelX: 1450, labelY: 668, source: SOURCE.bip39Seed, path: "libngu/ngu/bip39.py:443–451" },
   { from: "passphrase", to: "bip39", fromPort: "right", toPort: "left", label: "salt", labelX: 1323, labelY: 735, source: SOURCE.bip39Seed, path: "libngu/ngu/bip39.py:443–451" },
@@ -413,12 +411,20 @@ function renderLane(lane) {
   const title = svgElement("title");
   title.textContent = `${lane.label} · ${lane.path}`;
   link.append(title);
+  link.append(svgElement("rect", {
+    x: 0, y: lane.bandY, width: 1600, height: lane.bandH,
+    class: `lane-band lane-band-${lane.variant}`
+  }));
+  link.append(svgElement("rect", {
+    x: lane.x, y: lane.y, width: lane.w, height: lane.h, rx: 6,
+    class: "lane-header"
+  }));
   link.append(svgElement("line", {
     x1: lane.lineX, y1: lane.lineY, x2: 1575, y2: lane.lineY,
     class: "lane-divider"
   }));
   const label = svgElement("text", {
-    x: lane.x, y: lane.y, class: "lane-label"
+    x: lane.x + 12, y: lane.y + 18, class: "lane-label"
   });
   label.textContent = lane.label;
   link.append(label);

@@ -62,7 +62,8 @@ test("graph exposes the technical construction", async () => {
     "Coin Flips: ≥128 · ASCII 1|0",
     "SHA256(b'CC\\\\x01' || method",
     "b'CC\\\\x01S' || purpose",
-    "SHA256d(context || device_entropy",
+    "SHA256d(b'CC\\\\x01S' || purpose",
+    "|| method || device_entropy",
     "PBKDF2-HMAC-SHA512",
     "HMAC-SHA512(\\\"Bitcoin seed\\\""
   ]) {
@@ -79,14 +80,16 @@ test("every graph node and edge links directly to implementation source", async 
   const edgeCount = (edgeBlock.match(/\bfrom:/g) || []).length;
   const edgeSourceCount = (edgeBlock.match(/\bsource:/g) || []).length;
 
-  assert.equal(nodeCount, 18);
+  assert.equal(nodeCount, 17);
   assert.equal(nodeSourceCount, nodeCount);
-  assert.equal(edgeCount, 17);
+  assert.equal(edgeCount, 16);
   assert.equal(edgeSourceCount, edgeCount);
   assert.equal((nodeBlock.match(/title: "Secure Element 1"/g) || []).length, 2);
   assert.equal((nodeBlock.match(/title: "Secure Element 2"/g) || []).length, 2);
   assert.match(edgeBlock, /from: "se1Reseed", to: "runtimeReseed"/);
   assert.match(edgeBlock, /from: "se2Reseed", to: "runtimeReseed"/);
+  assert.doesNotMatch(nodeBlock, /id: "context"/);
+  assert.doesNotMatch(edgeBlock, /from: "context"/);
   assert.doesNotMatch(edgeBlock, /H 1515/);
   assert.doesNotMatch(edgeBlock, /label:\s*"SHA256d?"/);
   assert.match(edgeBlock, /label:\s*"required"[^}]+control:\s*true/);
