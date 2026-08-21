@@ -61,6 +61,24 @@ const LANES = [
   }
 ];
 
+const PHASES = [
+  {
+    label: "1  DEVICE ENTROPY", x: 400, y: 345, w: 685,
+    color: "#6ed5ff", source: SOURCE.deviceEntropy,
+    path: "firmware/shared/seed.py:646–659"
+  },
+  {
+    label: "2  REQUIRED USER INPUT", x: 400, y: 648, w: 580,
+    color: "#8be28b", source: SOURCE.seedMix,
+    path: "firmware/shared/seed.py:792–837"
+  },
+  {
+    label: "3  FINAL MIX", x: 1025, y: 535, w: 126,
+    color: "#ffcc00", source: SOURCE.seedMix,
+    path: "firmware/shared/seed.py:792–837"
+  }
+];
+
 const NODES = [
   {
     id: "trngGate", x: 25, y: 40, w: 400, h: 190,
@@ -90,7 +108,7 @@ const NODES = [
     ]
   },
   {
-    id: "mcuRandom", x: 720, y: 345, w: 365, h: 145,
+    id: "mcuRandom", x: 720, y: 375, w: 365, h: 145,
     title: "mcu_random[32]",
     expression: [
       "32-byte Hash_DRBG output XOR fresh",
@@ -113,7 +131,7 @@ const NODES = [
     ]
   },
   {
-    id: "se1", x: 400, y: 350, w: 270, h: 110,
+    id: "se1", x: 400, y: 380, w: 270, h: 110,
     title: "Secure Element 1",
     expression: ["Fresh entropy for", "master-seed generation"],
     path: "firmware/ae.c:694–714",
@@ -130,7 +148,7 @@ const NODES = [
     ]
   },
   {
-    id: "se2", x: 400, y: 485, w: 270, h: 110,
+    id: "se2", x: 400, y: 505, w: 270, h: 110,
     title: "Secure Element 2",
     expression: ["Fresh entropy for", "master-seed generation"],
     path: "firmware/se2.c:1331–1347",
@@ -202,14 +220,14 @@ const NODES = [
     ]
   },
   {
-    id: "device", x: 720, y: 520, w: 270, h: 100,
+    id: "device", x: 720, y: 545, w: 270, h: 100,
     title: "device_entropy[32]",
     expression: ["SHA256d(mcu_random[32] ||", "SE1[32] || SE2[8])"],
     path: "firmware/shared/seed.py:646–659",
     tone: "process", source: SOURCE.deviceEntropy
   },
   {
-    id: "mash", x: 25, y: 350, w: 280, h: 190,
+    id: "mash", x: 400, y: 680, w: 280, h: 190,
     title: "Mash Keys",
     expression: [
       "≥65 presses; raw timing before debounce",
@@ -239,7 +257,7 @@ const NODES = [
     ]
   },
   {
-    id: "symbols", x: 25, y: 550, w: 280, h: 145,
+    id: "symbols", x: 700, y: 680, w: 280, h: 145,
     title: "Dice Rolls / Coin Flips",
     expression: [
       "≥50 die rolls or ≥128 coin flips",
@@ -278,7 +296,7 @@ const NODES = [
     tone: "standard", source: SOURCE.bip39Words
   },
   {
-    id: "passphrase", x: 925, y: 720, w: 305, h: 70,
+    id: "passphrase", x: 1005, y: 720, w: 290, h: 70,
     title: "Optional BIP39 passphrase",
     expression: [],
     path: "libngu/ngu/bip39.py:443–451",
@@ -315,12 +333,12 @@ const EDGES = [
   { from: "se1Reseed", to: "runtimeReseed", fromPort: "right", toPort: "left", label: "32 B", labelX: 772, labelY: 80, source: SOURCE.secureElement1ReseedCall, path: "firmware/shared/mk4.py:43" },
   { from: "se2Reseed", to: "runtimeReseed", fromPort: "right", toPort: "left", label: "8 B", labelX: 772, labelY: 248, source: SOURCE.secureElement2ReseedCall, path: "firmware/shared/mk4.py:44" },
   { from: "runtimeReseed", to: "mcuRandom", fromPort: "bottom", toPort: "top", label: "reseeded state", labelX: 955, labelY: 298, source: SOURCE.randomReseed, path: "libngu/ngu/random.c:159–171" },
-  { from: "mcuRandom", to: "device", fromPort: "bottom", toPort: "top", label: "mcu_random[32]", labelX: 965, labelY: 505, source: SOURCE.deviceEntropy, path: "firmware/shared/seed.py:646–659" },
-  { from: "se1", to: "device", fromPort: "right", toPort: "left", label: "32 B", labelX: 695, labelY: 445, source: SOURCE.secureElement1, path: "firmware/ae.c:694–714" },
-  { from: "se2", to: "device", fromPort: "right", toPort: "left", label: "8 B", labelX: 695, labelY: 530, source: SOURCE.secureElement2, path: "firmware/se2.c:1331–1347" },
-  { from: "device", to: "mix", fromPort: "right", toPort: "top", label: "device_entropy[32]", labelX: 1090, labelY: 535, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837", route: "M 990 570 H 1005 Q 1020 570 1020 555 V 545 H 1140 Q 1160 545 1160 565 V 570" },
-  { from: "mash", to: "mix", fromPort: "right", toPort: "left", label: "if Mash selected", labelX: 520, labelY: 660, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837", route: "M 305 445 H 380 V 660 H 1000 Q 1025 660 1025 640" },
-  { from: "symbols", to: "mix", fromPort: "right", toPort: "bottom", label: "if Dice/Coin selected", labelX: 560, labelY: 700, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837", route: "M 305 622.5 H 340 V 700 H 1140 Q 1160 700 1160 680" },
+  { from: "mcuRandom", to: "device", fromPort: "bottom", toPort: "top", label: "mcu_random[32]", labelX: 790, labelY: 532, source: SOURCE.deviceEntropy, path: "firmware/shared/seed.py:646–659", route: "M 902.5 520 V 525 Q 902.5 535 892.5 535 H 865 Q 855 535 855 545" },
+  { from: "se1", to: "device", fromPort: "right", toPort: "left", label: "32 B", labelX: 695, labelY: 500, source: SOURCE.secureElement1, path: "firmware/ae.c:694–714", route: "M 670 435 H 690 V 570 Q 690 595 715 595 H 720" },
+  { from: "se2", to: "device", fromPort: "right", toPort: "left", label: "8 B", labelX: 695, labelY: 545, source: SOURCE.secureElement2, path: "firmware/se2.c:1331–1347" },
+  { from: "device", to: "mix", fromPort: "right", toPort: "top", label: "device_entropy[32]", labelX: 1085, labelY: 525, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837", route: "M 990 595 H 1005 Q 1015 595 1015 585 V 540 Q 1015 525 1030 525 H 1145 Q 1160 525 1160 540 V 570" },
+  { from: "mash", to: "mix", fromPort: "right", toPort: "left", label: "if Mash selected", labelX: 830, labelY: 665, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837", route: "M 680 775 H 690 V 675 H 1000 Q 1025 675 1025 650" },
+  { from: "symbols", to: "mix", fromPort: "right", toPort: "bottom", label: "if Dice/Coin selected", labelX: 1060, labelY: 700, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837", route: "M 980 752.5 H 995 V 700 H 1140 Q 1160 700 1160 680" },
   { from: "mix", to: "words", fromPort: "right", toPort: "left", label: "16|32 B", labelX: 1310, labelY: 553, source: SOURCE.seedWords, path: "firmware/shared/seed.py:887–898" },
   { from: "words", to: "bip39", fromPort: "bottom", toPort: "top", label: "mnemonic", labelX: 1450, labelY: 678, source: SOURCE.bip39Seed, path: "libngu/ngu/bip39.py:443–451" },
   { from: "passphrase", to: "bip39", fromPort: "right", toPort: "left", label: "passphrase", labelX: 1278, labelY: 735, source: SOURCE.bip39Seed, path: "libngu/ngu/bip39.py:443–451" },
@@ -432,6 +450,34 @@ function renderLane(lane) {
   link.append(label);
   link.addEventListener("pointerenter", () => setSourcePeek("LIFECYCLE", lane.path, lane.source));
   link.addEventListener("focus", () => setSourcePeek("LIFECYCLE", lane.path, lane.source));
+  graph.append(link);
+}
+
+function renderPhase(phase) {
+  const link = svgElement("a", {
+    href: phase.source,
+    target: "_blank",
+    rel: "noreferrer",
+    class: "phase-link",
+    tabindex: "0",
+    "aria-label": `${phase.label}: open implementation source`
+  });
+  link.style.setProperty("--phase-color", phase.color);
+
+  const title = svgElement("title");
+  title.textContent = `${phase.label} · ${phase.path}`;
+  link.append(title);
+  link.append(svgElement("rect", {
+    x: phase.x, y: phase.y, width: phase.w, height: 24, rx: 6,
+    class: "phase-header"
+  }));
+  const label = svgElement("text", {
+    x: phase.x + 11, y: phase.y + 16.5, class: "phase-label"
+  });
+  label.textContent = phase.label;
+  link.append(label);
+  link.addEventListener("pointerenter", () => setSourcePeek("PHASE", phase.path, phase.source));
+  link.addEventListener("focus", () => setSourcePeek("PHASE", phase.path, phase.source));
   graph.append(link);
 }
 
@@ -579,5 +625,6 @@ function renderNodeLinks(node) {
 
 renderDefinitions();
 LANES.forEach(renderLane);
+PHASES.forEach(renderPhase);
 EDGES.forEach(renderEdge);
 NODES.forEach(renderNode);

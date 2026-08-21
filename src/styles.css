@@ -103,7 +103,8 @@ body {
 .flow-node,
 .edge-link,
 .node-chip,
-.lane-link {
+.lane-link,
+.phase-link {
   outline: none;
 }
 
@@ -158,6 +159,34 @@ body {
 .lane-link:hover .lane-label,
 .lane-link:focus .lane-label {
   fill: var(--yellow-soft);
+}
+
+.phase-link {
+  cursor: alias;
+}
+
+.phase-header {
+  fill: #11110d;
+  stroke: var(--phase-color);
+  stroke-width: 1.2;
+  vector-effect: non-scaling-stroke;
+  transition: fill 120ms ease, filter 120ms ease, stroke-width 120ms ease;
+}
+
+.phase-label {
+  fill: var(--phase-color);
+  font-family: var(--mono);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.075em;
+  pointer-events: none;
+}
+
+.phase-link:hover .phase-header,
+.phase-link:focus .phase-header {
+  fill: #202017;
+  stroke-width: 2;
+  filter: drop-shadow(0 0 7px var(--phase-color));
 }
 
 .flow-node {

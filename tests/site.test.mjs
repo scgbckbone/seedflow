@@ -47,6 +47,9 @@ test("graph exposes the technical construction", async () => {
     "SHA256d(SE1[32] || SE2[8]))",
     "RUNTIME RNG INITIALIZATION",
     "MASTER-SEED GENERATION",
+    "1  DEVICE ENTROPY",
+    "2  REQUIRED USER INPUT",
+    "3  FINAL MIX",
     "Secure Element 1",
     "Secure Element 2",
     "Fresh startup entropy",
@@ -82,15 +85,20 @@ test("every graph node and edge links directly to implementation source", async 
   const app = await readSource("app.js");
   const nodeBlock = app.slice(app.indexOf("const NODES"), app.indexOf("const EDGES"));
   const edgeBlock = app.slice(app.indexOf("const EDGES"), app.indexOf("const graph"));
+  const phaseBlock = app.slice(app.indexOf("const PHASES"), app.indexOf("const NODES"));
   const nodeCount = (nodeBlock.match(/\bid:/g) || []).length;
   const nodeSourceCount = (nodeBlock.match(/\bsource:/g) || []).length;
   const edgeCount = (edgeBlock.match(/\bfrom:/g) || []).length;
   const edgeSourceCount = (edgeBlock.match(/\bsource:/g) || []).length;
+  const phaseCount = (phaseBlock.match(/\blabel:/g) || []).length;
+  const phaseSourceCount = (phaseBlock.match(/\bsource:/g) || []).length;
 
   assert.equal(nodeCount, 15);
   assert.equal(nodeSourceCount, nodeCount);
   assert.equal(edgeCount, 13);
   assert.equal(edgeSourceCount, edgeCount);
+  assert.equal(phaseCount, 3);
+  assert.equal(phaseSourceCount, phaseCount);
   assert.equal((nodeBlock.match(/id: "se1(?:Reseed)?"/g) || []).length, 2);
   assert.equal((nodeBlock.match(/id: "se2(?:Reseed)?"/g) || []).length, 2);
   assert.doesNotMatch(nodeBlock, /id: "trng"/);
@@ -117,6 +125,7 @@ test("every graph node and edge links directly to implementation source", async 
   assert.match(app, /href: node\.source/);
   assert.match(app, /href: edge\.source/);
   assert.match(app, /href: lane\.source/);
+  assert.match(app, /href: phase\.source/);
   assert.doesNotMatch(app, /class: "node-path"/);
   assert.match(app, /https:\/\/petertodd\.org\/2014\/push-button-rng/);
   assert.match(app, /https:\/\/coldcard\.com\/docs\/master-seed\/#create-a-new-master-seed/);
