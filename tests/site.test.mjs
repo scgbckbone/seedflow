@@ -34,15 +34,15 @@ test("graph exposes the technical construction", async () => {
   for (const fragment of [
     "init = TRNG[128]",
     "generate[32] XOR TRNG_fresh[32]",
-    "mcu[32] || se1[32]",
+    "SHA256d(mcu_random[32] ||",
     "65 presses → 64 gaps × 2 credited bits",
     "key bytes mixed · 0 credited bits",
     "pack('<IIB', count, Δticks, key)",
     "Dice Rolls: ≥50 · ASCII 1..6",
     "Coin Flips: ≥128 · ASCII 1|0",
-    "b'CC\\\\x01' || method",
+    "SHA256(b'CC\\\\x01' || method",
     "b'CC\\\\x01S' || purpose",
-    "context || device_entropy",
+    "SHA256d(context || device_entropy",
     "PBKDF2-HMAC-SHA512",
     "HMAC-SHA512(\\\"Bitcoin seed\\\""
   ]) {
@@ -59,10 +59,11 @@ test("every graph node and edge links directly to implementation source", async 
   const edgeCount = (edgeBlock.match(/\bfrom:/g) || []).length;
   const edgeSourceCount = (edgeBlock.match(/\bsource:/g) || []).length;
 
-  assert.equal(nodeCount, 15);
+  assert.equal(nodeCount, 13);
   assert.equal(nodeSourceCount, nodeCount);
-  assert.equal(edgeCount, 14);
+  assert.equal(edgeCount, 12);
   assert.equal(edgeSourceCount, edgeCount);
+  assert.doesNotMatch(edgeBlock, /label:\s*"SHA256d?"/);
   assert.doesNotMatch(nodeBlock, /source:\s*SOURCE\.pushButton/);
   assert.doesNotMatch(edgeBlock, /source:\s*SOURCE\.pushButton/);
   assert.match(app, /href: node\.source/);
