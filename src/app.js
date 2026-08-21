@@ -10,8 +10,6 @@ const SOURCE = Object.freeze({
   mashTiming: "https://github.com/Coldcard/firmware/blob/master/shared/numpad.py#L61-L87",
   rngSelftest: "https://github.com/Coldcard/firmware/blob/master/stm32/COLDCARD_MK4/rng.c#L180-L210",
   rngSelftestCall: "https://github.com/Coldcard/firmware/blob/master/stm32/COLDCARD_MK4/modckcc.c#L282-L288",
-  rngBoardHook: "https://github.com/Coldcard/firmware/blob/master/stm32/COLDCARD_MK4/mpconfigboard.h#L83-L84",
-  micropythonInit: "https://github.com/Coldcard/micropython/blob/4107246f8a080807b62c3b4838e71e812ea68b6f/ports/stm32/main.c#L395",
   hashDrbg: "https://github.com/switck/libngu/blob/master/ngu/random.c#L41-L91",
   secureElement1: "https://github.com/Coldcard/firmware/blob/master/stm32/mk4-bootloader/dispatch.c#L597-L602",
   secureElement2: "https://github.com/Coldcard/firmware/blob/master/stm32/mk4-bootloader/dispatch.c#L604-L608",
@@ -36,8 +34,9 @@ const TONES = Object.freeze({
 
 const NODES = [
   {
-    id: "rngGate", x: 370, y: 5, w: 390, h: 160,
+    id: "rngGate", x: 25, y: 5, w: 300, h: 180,
     title: "APPLICATION START REQUIRES STM32 TRNG",
+    titleLines: ["APPLICATION START", "REQUIRES STM32 TRNG"],
     expression: [
       "DRDY must appear within 10 ms",
       "8 reads must reach hardware rng_get()",
@@ -53,38 +52,34 @@ const NODES = [
         kind: "SOURCE", path: "firmware/modckcc.c:282–288"
       },
       {
-        label: "BOARD HOOK", width: 82, href: SOURCE.rngBoardHook,
-        kind: "SOURCE", path: "firmware/mpconfigboard.h:83–84"
-      },
-      {
-        label: "MICROPYTHON INIT", width: 112, href: SOURCE.micropythonInit,
-        kind: "SOURCE", path: "Coldcard/micropython · main.c:395"
+        label: "IMPLEMENTATION", width: 92, href: SOURCE.rngSelftest,
+        kind: "SOURCE", path: "firmware/rng.c:180–210"
       }
     ]
   },
   {
-    id: "trng", x: 25, y: 40, w: 250, h: 90,
+    id: "trng", x: 400, y: 35, w: 250, h: 90,
     title: "STM32 TRNG → Hash_DRBG",
     expression: ["init = TRNG[128]", "generate[32] XOR TRNG_fresh[32]"],
     path: "libngu/ngu/random.c:41–91",
     tone: "hardware", source: SOURCE.hashDrbg
   },
   {
-    id: "se1", x: 25, y: 150, w: 250, h: 90,
+    id: "se1", x: 400, y: 160, w: 250, h: 90,
     title: "Secure Element 1",
     expression: "authenticated_random[32]",
     path: "firmware/dispatch.c:597–602",
     tone: "hardware", source: SOURCE.secureElement1
   },
   {
-    id: "se2", x: 25, y: 260, w: 250, h: 90,
+    id: "se2", x: 400, y: 285, w: 250, h: 90,
     title: "Secure Element 2",
     expression: "authenticated_random[8]",
     path: "firmware/dispatch.c:604–608",
     tone: "hardware", source: SOURCE.secureElement2
   },
   {
-    id: "device", x: 370, y: 185, w: 270, h: 100,
+    id: "device", x: 750, y: 160, w: 270, h: 100,
     title: "device_entropy[32]",
     expression: ["SHA256d(mcu_random[32] ||", "SE1[32] || SE2[8])"],
     path: "firmware/shared/seed.py:646–659",
@@ -186,11 +181,11 @@ const NODES = [
 ];
 
 const EDGES = [
-  { from: "rngGate", to: "trng", fromPort: "left", toPort: "right", label: "required", labelX: 322, labelY: 65, source: SOURCE.rngSelftest, path: "firmware/stm32/COLDCARD_MK4/rng.c:180–210", control: true },
-  { from: "trng", to: "device", fromPort: "right", toPort: "left", label: "32 B", labelX: 322, labelY: 112, source: SOURCE.hashDrbg, path: "libngu/ngu/random.c:41–91" },
-  { from: "se1", to: "device", fromPort: "right", toPort: "left", label: "32 B", labelX: 322, labelY: 188, source: SOURCE.secureElement1, path: "firmware/dispatch.c:597–602" },
-  { from: "se2", to: "device", fromPort: "right", toPort: "left", label: "8 B", labelX: 322, labelY: 286, source: SOURCE.secureElement2, path: "firmware/dispatch.c:604–608" },
-  { from: "device", to: "mix", fromPort: "bottom", toPort: "top", label: "device_entropy[32]", labelX: 720, labelY: 300, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837" },
+  { from: "rngGate", to: "trng", fromPort: "right", toPort: "left", label: "required", labelX: 362, labelY: 88, source: SOURCE.rngSelftest, path: "firmware/stm32/COLDCARD_MK4/rng.c:180–210", control: true },
+  { from: "trng", to: "device", fromPort: "right", toPort: "left", label: "32 B", labelX: 700, labelY: 126, source: SOURCE.hashDrbg, path: "libngu/ngu/random.c:41–91" },
+  { from: "se1", to: "device", fromPort: "right", toPort: "left", label: "32 B", labelX: 700, labelY: 205, source: SOURCE.secureElement1, path: "firmware/dispatch.c:597–602" },
+  { from: "se2", to: "device", fromPort: "right", toPort: "left", label: "8 B", labelX: 700, labelY: 294, source: SOURCE.secureElement2, path: "firmware/dispatch.c:604–608" },
+  { from: "device", to: "mix", fromPort: "bottom", toPort: "top", label: "device_entropy[32]", labelX: 892, labelY: 320, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837" },
   { from: "mash", to: "userHash", fromPort: "right", toPort: "left", label: "timing", labelX: 337, labelY: 448, source: SOURCE.mashEntropy, path: "firmware/shared/seed.py:730–790" },
   { from: "symbols", to: "userHash", fromPort: "right", toPort: "left", label: "ASCII", labelX: 337, labelY: 593, source: SOURCE.symbolEntropy, path: "firmware/shared/seed.py:672–728" },
   { from: "userHash", to: "mix", fromPort: "right", toPort: "left", label: "user_entropy[32]", labelX: 700, labelY: 500, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837" },
@@ -347,11 +342,21 @@ function renderNode(node) {
   const titleText = svgElement("text", {
     x: node.x + 17, y: node.y + 30, class: "node-title"
   });
-  titleText.textContent = node.title;
+  const titleLines = node.titleLines || [node.title];
+  titleLines.forEach((line, index) => {
+    const span = svgElement("tspan", {
+      x: node.x + 17,
+      dy: index === 0 ? 0 : 18
+    });
+    span.textContent = line;
+    titleText.append(span);
+  });
   link.append(titleText);
 
   const expression = svgElement("text", {
-    x: node.x + 17, y: node.y + 51, class: "node-expression"
+    x: node.x + 17,
+    y: node.y + 51 + (titleLines.length - 1) * 18,
+    class: "node-expression"
   });
   const lines = Array.isArray(node.expression) ? node.expression : [node.expression];
   lines.forEach((line, index) => {

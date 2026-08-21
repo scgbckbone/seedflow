@@ -35,6 +35,7 @@ test("graph exposes the technical construction", async () => {
     "init = TRNG[128]",
     "generate[32] XOR TRNG_fresh[32]",
     "APPLICATION START REQUIRES STM32 TRNG",
+    'titleLines: ["APPLICATION START", "REQUIRES STM32 TRNG"]',
     "DRDY must appear within 10 ms",
     "8 reads must reach hardware rng_get()",
     "missing TRNG or wrong linkage → __fatal_error()",
@@ -81,8 +82,9 @@ test("every graph node and edge links directly to implementation source", async 
   assert.match(app, /shared\/numpad\.py#L61-L87/);
   assert.match(app, /COLDCARD_MK4\/rng\.c#L180-L210/);
   assert.match(app, /COLDCARD_MK4\/modckcc\.c#L282-L288/);
-  assert.match(app, /COLDCARD_MK4\/mpconfigboard\.h#L83-L84/);
-  assert.match(app, /Coldcard\/micropython\/blob\/4107246f/);
+  assert.match(app, /label: "CALL SITE"/);
+  assert.match(app, /label: "IMPLEMENTATION"/);
+  assert.doesNotMatch(app, /BOARD HOOK|MICROPYTHON INIT/);
   assert.match(app, /https:\/\/github\.com\/Coldcard\/firmware/);
   assert.match(app, /https:\/\/github\.com\/switck\/libngu/);
 });
