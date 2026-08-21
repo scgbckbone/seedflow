@@ -4,9 +4,7 @@ const SOURCE = Object.freeze({
   seedMix: "https://github.com/Coldcard/firmware/blob/master/shared/seed.py#L792-L837",
   deviceEntropy: "https://github.com/Coldcard/firmware/blob/master/shared/seed.py#L646-L659",
   symbolEntropy: "https://github.com/Coldcard/firmware/blob/master/shared/seed.py#L672-L728",
-  symbolDigest: "https://github.com/Coldcard/firmware/blob/master/shared/seed.py#L688-L728",
   mashEntropy: "https://github.com/Coldcard/firmware/blob/master/shared/seed.py#L730-L790",
-  mashDigest: "https://github.com/Coldcard/firmware/blob/master/shared/seed.py#L741-L790",
   mashTiming: "https://github.com/Coldcard/firmware/blob/master/shared/numpad.py#L61-L87",
   rngHardware: "https://github.com/Coldcard/firmware/blob/master/stm32/COLDCARD_MK4/rng.c#L105-L167",
   rngSelftest: "https://github.com/Coldcard/firmware/blob/master/stm32/COLDCARD_MK4/rng.c#L180-L210",
@@ -211,15 +209,16 @@ const NODES = [
     tone: "process", source: SOURCE.deviceEntropy
   },
   {
-    id: "mash", x: 25, y: 350, w: 280, h: 160,
+    id: "mash", x: 25, y: 350, w: 280, h: 190,
     title: "Mash Keys",
     expression: [
-      "Raw press timing is captured before",
-      "keypad debounce",
-      "Intervals use CPU-cycle resolution",
-      "(~8.33 ns)",
-      "Intervals and key values are mixed;",
-      "only intervals receive entropy credit"
+      "≥65 presses; raw timing before debounce",
+      "CPU-cycle intervals (~8.33 ns)",
+      "event = LE32(index) || LE32(cycle gap)",
+      "        || key byte",
+      "digest[32] = SHA256(b'CC\\x01' ||",
+      "  METHOD_MASH || event...)",
+      "Only cycle gaps receive entropy credit"
     ],
     expressionSize: 10.1,
     path: "firmware/shared/seed.py:730–790",
@@ -240,13 +239,14 @@ const NODES = [
     ]
   },
   {
-    id: "symbols", x: 25, y: 520, w: 280, h: 130,
+    id: "symbols", x: 25, y: 550, w: 280, h: 145,
     title: "Dice Rolls / Coin Flips",
     expression: [
-      "Collects ≥50 six-sided die results",
-      "or ≥128 coin-flip results",
-      "Rejects highly biased sequences:",
-      "die face >30% or coin side >65%"
+      "≥50 die rolls or ≥128 coin flips",
+      "method = METHOD_DICE or METHOD_COIN",
+      "digest[32] = SHA256(b'CC\\x01' ||",
+      "  method || ASCII results...)",
+      "Reject face >30% or side >65%"
     ],
     expressionSize: 10.1,
     path: "firmware/shared/seed.py:672–728",
@@ -257,30 +257,6 @@ const NODES = [
         kind: "DOCS", path: "coldcard.com/docs/master-seed"
       }
     ]
-  },
-  {
-    id: "mashDigest", x: 400, y: 625, w: 340, h: 120,
-    title: "Mash digest[32]",
-    expression: [
-      "event = LE32(index) || LE32(cycle interval)",
-      "        || key byte",
-      "SHA256(b'CC\\x01' || METHOD_MASH || event...)"
-    ],
-    expressionSize: 9.6,
-    path: "firmware/shared/seed.py:741–790",
-    tone: "process", source: SOURCE.mashDigest
-  },
-  {
-    id: "symbolDigest", x: 400, y: 770, w: 340, h: 120,
-    title: "Dice / Coin digest[32]",
-    expression: [
-      "SHA256(b'CC\\x01' || METHOD_DICE || ASCII rolls...)",
-      "or",
-      "SHA256(b'CC\\x01' || METHOD_COIN || ASCII flips...)"
-    ],
-    expressionSize: 9.6,
-    path: "firmware/shared/seed.py:688–728",
-    tone: "process", source: SOURCE.symbolDigest
   },
   {
     id: "mix", x: 1025, y: 570, w: 270, h: 110,
@@ -343,10 +319,8 @@ const EDGES = [
   { from: "se1", to: "device", fromPort: "right", toPort: "left", label: "32 B", labelX: 695, labelY: 445, source: SOURCE.secureElement1, path: "firmware/ae.c:694–714" },
   { from: "se2", to: "device", fromPort: "right", toPort: "left", label: "8 B", labelX: 695, labelY: 530, source: SOURCE.secureElement2, path: "firmware/se2.c:1331–1347" },
   { from: "device", to: "mix", fromPort: "right", toPort: "top", label: "device_entropy[32]", labelX: 1090, labelY: 535, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837", route: "M 990 570 H 1005 Q 1020 570 1020 555 V 545 H 1140 Q 1160 545 1160 565 V 570" },
-  { from: "mash", to: "mashDigest", fromPort: "right", toPort: "left", label: "packed events", labelX: 345, labelY: 675, source: SOURCE.mashDigest, path: "firmware/shared/seed.py:741–790", route: "M 305 430 H 380 V 685 H 400" },
-  { from: "symbols", to: "symbolDigest", fromPort: "right", toPort: "left", label: "ASCII results", labelX: 345, labelY: 750, source: SOURCE.symbolDigest, path: "firmware/shared/seed.py:688–728", route: "M 305 585 H 345 V 830 H 400" },
-  { from: "mashDigest", to: "mix", fromPort: "right", toPort: "left", label: "if Mash selected", labelX: 875, labelY: 670, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837", route: "M 740 685 C 840 685 910 650 1025 650" },
-  { from: "symbolDigest", to: "mix", fromPort: "right", toPort: "bottom", label: "if Dice/Coin selected", labelX: 900, labelY: 700, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837", route: "M 740 830 H 760 Q 780 830 780 810 V 720 Q 780 700 800 700 H 1140 Q 1160 700 1160 680" },
+  { from: "mash", to: "mix", fromPort: "right", toPort: "left", label: "if Mash selected", labelX: 520, labelY: 660, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837", route: "M 305 445 H 380 V 660 H 1000 Q 1025 660 1025 640" },
+  { from: "symbols", to: "mix", fromPort: "right", toPort: "bottom", label: "if Dice/Coin selected", labelX: 560, labelY: 700, source: SOURCE.seedMix, path: "firmware/shared/seed.py:792–837", route: "M 305 622.5 H 340 V 700 H 1140 Q 1160 700 1160 680" },
   { from: "mix", to: "words", fromPort: "right", toPort: "left", label: "16|32 B", labelX: 1310, labelY: 553, source: SOURCE.seedWords, path: "firmware/shared/seed.py:887–898" },
   { from: "words", to: "bip39", fromPort: "bottom", toPort: "top", label: "mnemonic", labelX: 1450, labelY: 678, source: SOURCE.bip39Seed, path: "libngu/ngu/bip39.py:443–451" },
   { from: "passphrase", to: "bip39", fromPort: "right", toPort: "left", label: "passphrase", labelX: 1278, labelY: 735, source: SOURCE.bip39Seed, path: "libngu/ngu/bip39.py:443–451" },
