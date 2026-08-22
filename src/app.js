@@ -146,8 +146,8 @@ const NODES = [
     id: "runtimeReseed", x: 800, y: 90, w: 365, h: 145,
     title: "SE entropy → Hash_DRBG reseed",
     expression: [
-      "Hash_DRBG.Reseed(",
-      "    SHA256d(SE1[32] || SE2[8]))"
+      "Hash_DRBG.Reseed(SHA256d(SE1[32] ||",
+      "                         SE2[8]))"
     ],
     expressionSize: 10.1,
     path: "firmware/shared/mk4.py:39–50",
@@ -201,10 +201,9 @@ const NODES = [
     id: "device", x: 500, y: 380, w: 280, h: 100,
     title: "device_entropy[32]",
     expression: [
-      "SHA256d(",
-      "    mcu_random[32] ||",
-      "    SE1[32] ||",
-      "    SE2[8])"
+      "SHA256d(mcu_random[32] ||",
+      "        SE1[32] ||",
+      "        SE2[8])"
     ],
     path: "firmware/shared/seed.py:646–659",
     tone: "process", source: SOURCE.deviceEntropy
@@ -217,9 +216,9 @@ const NODES = [
       "CPU-cycle intervals (~8.33 ns)",
       "event = LE32(index) ||",
       "        LE32(cycle gap) || key byte",
-      "digest[32] = SHA256(",
-      "    b'CC\\x01' || METHOD_MASH ||",
-      "    event...)",
+      "digest[32] = SHA256(b'CC\\x01' ||",
+      "                    METHOD_MASH ||",
+      "                    event...)",
       "Only cycle gaps receive entropy credit"
     ],
     expressionSize: 10.1,
@@ -246,9 +245,9 @@ const NODES = [
     expression: [
       "≥50 die rolls or ≥128 coin flips",
       "method = METHOD_DICE or METHOD_COIN",
-      "digest[32] = SHA256(",
-      "    b'CC\\x01' || method ||",
-      "    ASCII results...)",
+      "digest[32] = SHA256(b'CC\\x01' ||",
+      "                    method ||",
+      "                    ASCII results...)",
       "Reject face >30% or side >65%"
     ],
     expressionSize: 10.1,
@@ -265,11 +264,10 @@ const NODES = [
     id: "mix", x: 900, y: 535, w: 320, h: 145,
     title: "seed_entropy[32]",
     expression: [
-      "SHA256d(",
-      "    b'CC\\x01S' || purpose ||",
-      "    selected method ||",
-      "    device_entropy[32] ||",
-      "    selected digest[32])"
+      "SHA256d(b'CC\\x01S' || purpose ||",
+      "        selected method ||",
+      "        device_entropy[32] ||",
+      "        selected digest[32])"
     ],
     expressionSize: 10.1,
     path: "firmware/shared/seed.py:792–837",

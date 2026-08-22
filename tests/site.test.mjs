@@ -43,8 +43,8 @@ test("graph exposes the technical construction", async () => {
     "A failed, zero or repeated TRNG word",
     "aborts generation",
     "SE entropy → Hash_DRBG reseed",
-    "Hash_DRBG.Reseed(",
-    "SHA256d(SE1[32] || SE2[8]))",
+    "Hash_DRBG.Reseed(SHA256d(SE1[32] ||",
+    "SE2[8]))",
     "STARTUP RNG INITIALIZATION",
     "SEED GENERATION",
     "Secure Element 1",
@@ -56,13 +56,13 @@ test("graph exposes the technical construction", async () => {
     "CPU-cycle intervals (~8.33 ns)",
     "event = LE32(index) ||",
     "LE32(cycle gap) || key byte",
-    "digest[32] = SHA256(",
-    "b'CC\\\\x01' || METHOD_MASH ||",
+    "digest[32] = SHA256(b'CC\\\\x01' ||",
+    "METHOD_MASH ||",
     "event...)",
     "Only cycle gaps receive entropy credit",
     "≥50 die rolls or ≥128 coin flips",
     "method = METHOD_DICE or METHOD_COIN",
-    "b'CC\\\\x01' || method ||",
+    "method ||",
     "ASCII results...)",
     "Reject face >30% or side >65%",
     "selected method ||",
@@ -74,6 +74,8 @@ test("graph exposes the technical construction", async () => {
   ]) {
     assert.ok(app.includes(fragment), `missing graph expression: ${fragment}`);
   }
+
+  assert.doesNotMatch(app, /^\s+"(?:Hash_DRBG\.Reseed|SHA256d|digest\[32\] = SHA256)\(",$/m);
 });
 
 test("nodes link to source while edges remain purely visual", async () => {
