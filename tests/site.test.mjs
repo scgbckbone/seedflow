@@ -21,11 +21,20 @@ test("page is self-contained and accessible without external scripts", async () 
 
   assert.match(html, /^<!doctype html>/i);
   assert.match(html, /class="graph-viewport"/);
+  assert.match(html, /class="identity-bar"/);
+  assert.match(html, /<h1>Seed Generation<\/h1>/);
+  assert.match(html, /MK4 \/ MK5 ≥ 5\.6\.1/);
+  assert.match(html, /Q ≥ 1\.5\.1Q/);
+  assert.match(html, /Unofficial/);
   assert.match(html, /id="seed-graph"/);
   assert.match(html, /aria-labelledby="graph-title graph-description"/);
   assert.match(html, /<noscript>/);
   assert.doesNotMatch(html, /<script[^>]+src=["']https?:/i);
   assert.doesNotMatch(html, /class="(?:hero|site-header|formula-section|site-footer)"/);
+  assert.ok(
+    html.indexOf('id="source-peek"') < html.indexOf('<main'),
+    "source preview should be part of the identity header"
+  );
 });
 
 test("graph exposes the technical construction", async () => {

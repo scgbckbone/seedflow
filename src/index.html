@@ -6,27 +6,31 @@
     <meta name="theme-color" content="#090906">
     <meta
       name="description"
-      content="A source-linked technical graph of COLDCARD seed generation."
+      content="A source-linked map of COLDCARD seed generation for Mk4/Mk5 firmware 5.6.1 and later and Q firmware 1.5.1Q and later."
     >
-    <title>COLDCARD seed source map</title>
+    <title>COLDCARD Seed Generation · Firmware ≥5.6.1 / ≥1.5.1Q</title>
     <link rel="icon" href="favicon.svg" type="image/svg+xml">
     <link rel="stylesheet" href="styles.css">
     <script src="app.js" defer></script>
   </head>
   <body>
-    <main class="graph-viewport">
-      <svg
-        id="seed-graph"
-        class="seed-graph"
-        viewBox="0 0 1600 900"
-        role="img"
-        aria-labelledby="graph-title graph-description"
+    <header class="identity-bar">
+      <div class="identity-title">
+        <span class="identity-brand">COLDCARD</span>
+        <div class="identity-heading">
+          <h1>Seed Generation</h1>
+          <p>Source-linked technical map <span aria-hidden="true">·</span> Unofficial</p>
+        </div>
+      </div>
+
+      <div
+        class="firmware-scope"
+        aria-label="Firmware scope: Mk4 and Mk5 version 5.6.1 and later; Q version 1.5.1Q and later"
       >
-        <title id="graph-title">COLDCARD seed generation source map</title>
-        <desc id="graph-description">
-          A technical data-flow graph. Every node opens its implementation source.
-        </desc>
-      </svg>
+        <span class="firmware-scope-label">FIRMWARE SCOPE</span>
+        <strong>MK4 / MK5 ≥ 5.6.1</strong>
+        <strong>Q ≥ 1.5.1Q</strong>
+      </div>
 
       <a
         id="source-peek"
@@ -39,6 +43,23 @@
         <code id="source-path">Coldcard/firmware · shared/seed.py</code>
         <span aria-hidden="true">↗</span>
       </a>
+    </header>
+
+    <main class="graph-viewport">
+      <svg
+        id="seed-graph"
+        class="seed-graph"
+        viewBox="0 0 1600 900"
+        role="img"
+        aria-labelledby="graph-title graph-description"
+      >
+        <title id="graph-title">
+          COLDCARD seed generation source map for Mk4 and Mk5 firmware 5.6.1 and later and Q firmware 1.5.1Q and later
+        </title>
+        <desc id="graph-description">
+          An unofficial technical data-flow graph for current COLDCARD seed generation. Every node opens its implementation source.
+        </desc>
+      </svg>
 
       <noscript>
         <a class="noscript-source" href="https://github.com/Coldcard/firmware/blob/master/shared/seed.py">

@@ -2,6 +2,8 @@
 
 An interactive, source-linked technical graph of how COLDCARD combines device
 randomness, required user entropy, BIP39, and BIP32 to generate wallet keys.
+The graph covers Mk4/Mk5 firmware 5.6.1 and later and Q firmware 1.5.1Q and
+later.
 
 Every node opens its implementation source. Nodes expose the
 relevant expression, byte width, and repository path directly in the graph.
