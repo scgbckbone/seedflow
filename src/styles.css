@@ -1,16 +1,17 @@
 :root {
-  color-scheme: dark;
-  --bg: #090906;
-  --panel: #151510;
-  --line: #303024;
-  --line-bright: #616148;
-  --ink: #f5f2de;
-  --muted: #a5a38c;
-  --dim: #6e6d59;
-  --yellow: #ffcc00;
-  --yellow-soft: #ffe67c;
+  color-scheme: light;
+  --bg: #f5f6f7;
+  --panel: #141414;
+  --line: #303030;
+  --line-bright: #73777a;
+  --ink: #111;
+  --panel-ink: #fff;
+  --muted: #c7cdd0;
+  --dim: #aeb3b6;
+  --red: #e20000;
   --mono: "SFMono-Regular", "Cascadia Code", "Roboto Mono", Consolas, monospace;
-  --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --sans: "Helvetica Neue", Arial, ui-sans-serif, system-ui, sans-serif;
+  --display: "Arial Black", "Helvetica Neue", Arial, ui-sans-serif, system-ui, sans-serif;
 }
 
 * {
@@ -36,11 +37,8 @@ body {
 .graph-viewport {
   position: relative;
   overflow: auto;
-  background:
-    radial-gradient(circle at 11% 7%, rgb(255 204 0 / 7%), transparent 31rem),
-    radial-gradient(circle at 67% 49%, rgb(110 213 255 / 4%), transparent 28rem),
-    var(--bg);
-  scrollbar-color: var(--line-bright) transparent;
+  background: var(--bg);
+  scrollbar-color: #8c9093 #e4e6e8;
   scrollbar-width: thin;
 }
 
@@ -50,10 +48,7 @@ body {
   height: 100%;
   min-width: 1100px;
   min-height: 619px;
-  background-image:
-    linear-gradient(rgb(255 255 255 / 2.2%) 1px, transparent 1px),
-    linear-gradient(90deg, rgb(255 255 255 / 2.2%) 1px, transparent 1px);
-  background-size: 42px 42px;
+  background: var(--bg);
 }
 
 .source-peek,
@@ -67,15 +62,14 @@ body {
   align-items: center;
   max-width: calc(100vw - 32px);
   padding: 9px 12px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
+  border: 1px solid #000;
+  border-radius: 10px;
   color: var(--muted);
-  background: rgb(11 11 8 / 92%);
-  box-shadow: 0 12px 35px rgb(0 0 0 / 42%);
+  background: #050505;
+  box-shadow: 0 12px 30px rgb(0 0 0 / 18%);
   font-family: var(--mono);
   font-size: 0.67rem;
   text-decoration: none;
-  backdrop-filter: blur(12px);
   transition: border-color 120ms ease, color 120ms ease;
 }
 
@@ -83,18 +77,21 @@ body {
 .source-peek:focus-visible,
 .noscript-source:hover,
 .noscript-source:focus-visible {
-  border-color: var(--yellow);
-  color: var(--yellow-soft);
+  border-color: var(--red);
+  color: #fff;
   outline: none;
 }
 
 .source-peek > span:first-child {
-  color: var(--yellow);
+  color: var(--red);
+  font-weight: 800;
   letter-spacing: 0.12em;
 }
 
 .source-peek code {
+  min-width: 0;
   overflow: hidden;
+  flex: 1;
   font-family: inherit;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -115,35 +112,35 @@ body {
 }
 
 .lane-band-runtime {
-  fill: rgb(110 213 255 / 3%);
+  fill: rgb(0 0 0 / 1.8%);
 }
 
 .lane-band-generation {
-  fill: rgb(255 204 0 / 2.6%);
+  fill: rgb(226 0 0 / 2.6%);
 }
 
 .lane-header {
-  fill: #151510;
-  stroke: #5b5a45;
-  stroke-width: 1;
+  fill: #fff;
+  stroke: #111;
+  stroke-width: 1.5;
   vector-effect: non-scaling-stroke;
   transition: fill 120ms ease, stroke 120ms ease;
 }
 
 .lane-divider {
-  stroke: #5b5a45;
-  stroke-width: 1.5;
-  stroke-dasharray: 5 7;
+  stroke: #c7cdd0;
+  stroke-width: 1.25;
+  stroke-dasharray: 4 8;
   vector-effect: non-scaling-stroke;
   transition: stroke 120ms ease;
 }
 
 .lane-label {
   fill: var(--ink);
-  font-family: var(--mono);
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.11em;
+  font-family: var(--display);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
   transition: fill 120ms ease;
 }
 
@@ -151,12 +148,12 @@ body {
 .lane-link:focus .lane-header,
 .lane-link:hover .lane-divider,
 .lane-link:focus .lane-divider {
-  stroke: var(--yellow);
+  stroke: var(--red);
 }
 
 .lane-link:hover .lane-label,
 .lane-link:focus .lane-label {
-  fill: var(--yellow-soft);
+  fill: var(--red);
 }
 
 .flow-node {
@@ -164,31 +161,40 @@ body {
 }
 
 .flow-node rect {
-  fill: rgb(20 20 15 / 96%);
-  stroke: var(--node-color, #565642);
-  stroke-width: 1.5;
+  fill: var(--panel);
+  stroke: var(--line);
+  stroke-width: 1;
   vector-effect: non-scaling-stroke;
-  transition: fill 120ms ease, filter 120ms ease, stroke-width 120ms ease;
+  transition: filter 120ms ease, stroke 120ms ease, stroke-width 120ms ease;
 }
 
 .flow-node:hover rect,
 .flow-node:focus rect {
-  fill: #202017;
-  stroke-width: 2.5;
-  filter: drop-shadow(0 0 11px var(--node-glow, rgb(255 204 0 / 20%)));
+  stroke: var(--red);
+  stroke-width: 2;
+  filter: drop-shadow(0 8px 10px rgb(0 0 0 / 18%));
 }
 
+.node-category,
 .node-title,
 .node-expression {
   pointer-events: none;
 }
 
-.node-title {
-  fill: var(--ink);
+.node-category {
+  fill: var(--node-accent, var(--dim));
   font-family: var(--sans);
-  font-size: 18.5px;
-  font-weight: 650;
-  letter-spacing: -0.025em;
+  font-size: 8px;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+}
+
+.node-title {
+  fill: var(--panel-ink);
+  font-family: var(--display);
+  font-size: 18px;
+  font-weight: 900;
+  letter-spacing: -0.035em;
 }
 
 .node-expression {
@@ -199,8 +205,8 @@ body {
 
 .flow-edge {
   fill: none;
-  stroke: #696953;
-  stroke-width: 2;
+  stroke: var(--line-bright);
+  stroke-width: 2.2;
   vector-effect: non-scaling-stroke;
 }
 
@@ -213,8 +219,8 @@ body {
 }
 
 .node-chip rect {
-  fill: #10100c;
-  stroke: #4b4a3a;
+  fill: #242424;
+  stroke: #444;
   vector-effect: non-scaling-stroke;
 }
 
@@ -227,12 +233,12 @@ body {
 
 .node-chip:hover rect,
 .node-chip:focus rect {
-  stroke: var(--yellow);
+  stroke: var(--red);
 }
 
 .node-chip:hover text,
 .node-chip:focus text {
-  fill: var(--yellow-soft);
+  fill: #fff;
 }
 
 .noscript-source {
@@ -251,8 +257,9 @@ body {
 
   .source-peek {
     right: 9px;
+    left: 9px;
     bottom: 9px;
-    max-width: calc(100vw - 18px);
+    max-width: none;
     font-size: 0.59rem;
   }
 

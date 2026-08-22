@@ -83,6 +83,26 @@ test("graph exposes the technical construction", async () => {
   assert.match(app, /"SHA256d\(mcu_random\[32\] \|\|",\n\s+" {9}SE1\[32\] \|\|",\n\s+" {9}SE2\[8\]\)"/);
 });
 
+test("graph uses the Coldcard-inspired visual system", async () => {
+  const [app, css] = await Promise.all([
+    readSource("app.js"),
+    readSource("styles.css")
+  ]);
+
+  assert.match(css, /--red: #e20000/);
+  assert.match(css, /--bg: #f5f6f7/);
+  assert.match(css, /--panel: #141414/);
+  assert.match(css, /\.node-category/);
+  assert.doesNotMatch(css, /radial-gradient|background-size: 42px 42px/);
+  assert.doesNotMatch(css, /--yellow|--node-glow/);
+  assert.match(app, /label: "HARDWARE"/);
+  assert.match(app, /label: "HUMAN INPUT"/);
+  assert.match(app, /label: "PROCESS"/);
+  assert.match(app, /label: "GUARD"/);
+  assert.match(app, /label: "RESULT"/);
+  assert.match(app, /class: "node-category"/);
+});
+
 test("nodes link to source while edges remain purely visual", async () => {
   const app = await readSource("app.js");
   const nodeBlock = app.slice(app.indexOf("const NODES"), app.indexOf("const EDGES"));

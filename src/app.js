@@ -30,12 +30,12 @@ const SOURCE = Object.freeze({
 });
 
 const TONES = Object.freeze({
-  hardware: { color: "#ff8a00", glow: "rgb(255 138 0 / 25%)" },
-  human: { color: "#8be28b", glow: "rgb(139 226 139 / 24%)" },
-  process: { color: "#6ed5ff", glow: "rgb(110 213 255 / 24%)" },
-  guard: { color: "#ff6868", glow: "rgb(255 104 104 / 25%)" },
-  result: { color: "#ffcc00", glow: "rgb(255 204 0 / 28%)" },
-  standard: { color: "#f5f2de", glow: "rgb(245 242 222 / 18%)" }
+  hardware: { accent: "#e20000", label: "HARDWARE" },
+  human: { accent: "#aeb3b6", label: "HUMAN INPUT" },
+  process: { accent: "#aeb3b6", label: "PROCESS" },
+  guard: { accent: "#e20000", label: "GUARD" },
+  result: { accent: "#e20000", label: "RESULT" },
+  standard: { accent: "#aeb3b6", label: "STANDARD" }
 });
 
 const LANES = [
@@ -353,7 +353,7 @@ function renderDefinitions() {
     id: "arrow", markerWidth: 8, markerHeight: 8, refX: 7, refY: 4,
     orient: "auto", markerUnits: "strokeWidth"
   });
-  marker.append(svgElement("path", { d: "M 0 0 L 8 4 L 0 8 z", fill: "#696953" }));
+  marker.append(svgElement("path", { d: "M 0 0 L 8 4 L 0 8 z", fill: "#e20000" }));
   defs.append(marker);
 
   graph.append(defs);
@@ -418,19 +418,27 @@ function renderNode(node) {
     tabindex: "0",
     "aria-label": `${node.title}: open implementation source`
   });
-  link.style.setProperty("--node-color", tone.color);
-  link.style.setProperty("--node-glow", tone.glow);
+  link.style.setProperty("--node-accent", tone.accent);
   link.style.setProperty("--expression-size", `${node.expressionSize || 11.2}px`);
 
   const title = svgElement("title");
   title.textContent = `${node.title} · ${node.path}`;
   link.append(title);
   link.append(svgElement("rect", {
-    x: node.x, y: node.y, width: node.w, height: node.h, rx: 12
+    x: node.x, y: node.y, width: node.w, height: node.h, rx: 18
   }));
 
+  const categoryText = svgElement("text", {
+    x: node.x + node.w - 16,
+    y: node.y + 16,
+    class: "node-category",
+    "text-anchor": "end"
+  });
+  categoryText.textContent = tone.label;
+  link.append(categoryText);
+
   const titleText = svgElement("text", {
-    x: node.x + 17, y: node.y + 30, class: "node-title"
+    x: node.x + 17, y: node.y + 38, class: "node-title"
   });
   const titleLines = node.titleLines || [node.title];
   titleLines.forEach((line, index) => {
@@ -445,7 +453,7 @@ function renderNode(node) {
 
   const expression = svgElement("text", {
     x: node.x + 17,
-    y: node.y + 51 + (titleLines.length - 1) * 20,
+    y: node.y + 57 + (titleLines.length - 1) * 20,
     class: "node-expression"
   });
   const lines = Array.isArray(node.expression) ? node.expression : [node.expression];
