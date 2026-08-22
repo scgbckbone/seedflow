@@ -34,7 +34,7 @@ test("page is self-contained and accessible without external scripts", async () 
   assert.doesNotMatch(html, /class="(?:hero|site-header|formula-section|site-footer)"/);
   assert.match(header, /class="security-advisory"/);
   assert.match(header, /https:\/\/coldcard\.com\/security\/status/);
-  assert.match(header, /SECURITY ADVISORY/);
+  assert.match(header, /COLDCARD SECURITY ADVISORY/);
   assert.match(header, /Existing affected seeds require migration/);
   assert.doesNotMatch(html, /id="source-peek"|id="source-kind"|id="source-path"/);
   assert.doesNotMatch(header, /Seed Generation|Unofficial|Source-linked technical map/);
