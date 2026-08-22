@@ -87,6 +87,8 @@ test("nodes link to source while edges remain purely visual", async () => {
   const app = await readSource("app.js");
   const nodeBlock = app.slice(app.indexOf("const NODES"), app.indexOf("const EDGES"));
   const edgeBlock = app.slice(app.indexOf("const EDGES"), app.indexOf("const graph"));
+  const mixBlock = nodeBlock.slice(nodeBlock.indexOf('id: "mix"'), nodeBlock.indexOf('id: "words"'));
+  const wordsBlock = nodeBlock.slice(nodeBlock.indexOf('id: "words"'));
   const nodeCount = (nodeBlock.match(/\bid:/g) || []).length;
   const nodeSourceCount = (nodeBlock.match(/\bsource:/g) || []).length;
   const edgeCount = (edgeBlock.match(/\bfrom:/g) || []).length;
@@ -94,6 +96,9 @@ test("nodes link to source while edges remain purely visual", async () => {
   assert.equal(nodeCount, 12);
   assert.equal(nodeSourceCount, nodeCount);
   assert.equal(edgeCount, 10);
+  assert.match(mixBlock, /tone: "result"/);
+  assert.match(wordsBlock, /tone: "result"/);
+  assert.equal((nodeBlock.match(/tone: "result"/g) || []).length, 2);
   assert.equal((nodeBlock.match(/id: "se1(?:Reseed)?"/g) || []).length, 2);
   assert.equal((nodeBlock.match(/id: "se2(?:Reseed)?"/g) || []).length, 2);
   assert.doesNotMatch(nodeBlock, /id: "trng"/);

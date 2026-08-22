@@ -269,7 +269,7 @@ const NODES = [
     ],
     expressionSize: 10.1,
     path: "firmware/shared/seed.py:792–837",
-    tone: "process", source: SOURCE.seedMix
+    tone: "result", source: SOURCE.seedMix
   },
   {
     id: "words", x: 1250, y: 560, w: 250, h: 90,
