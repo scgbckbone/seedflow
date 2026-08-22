@@ -152,6 +152,11 @@ test("nodes link to source while edges remain purely visual", async () => {
   assert.match(app, /shared\/mk4\.py#L44/);
   assert.match(app, /shared\/main\.py#L52-L60/);
   assert.match(app, /random\.c#L159-L171/);
+  assert.match(app, /random\.c#L20-L39/);
+  assert.match(app, /random\.c#L41-L60/);
+  assert.match(app, /random\.c#L62-L71/);
+  assert.match(app, /random\.c#L73-L93/);
+  assert.doesNotMatch(app, /random\.c#L20-L93/);
   assert.match(app, /shared\/numpad\.py#L61-L87/);
   assert.match(app, /COLDCARD_MK4\/rng\.c#L180-L210/);
   assert.match(app, /COLDCARD_MK4\/rng\.c#L105-L167/);
@@ -159,7 +164,6 @@ test("nodes link to source while edges remain purely visual", async () => {
   assert.match(app, /COLDCARD_MK4\/mpconfigboard\.h#L83-L84/);
   assert.match(app, /Coldcard\/micropython\/blob\/4107246f/);
   assert.match(app, /random_backend\.h#L26-L41/);
-  assert.match(app, /random\.c#L20-L93/);
   assert.match(app, /label: "CALL SITE"/);
   assert.match(app, /label: "BOARD HOOK"/);
   assert.match(app, /label: "MPY INIT"/);
@@ -169,6 +173,9 @@ test("nodes link to source while edges remain purely visual", async () => {
   assert.match(app, /label: "RESEED CALL"/);
   assert.match(app, /label: "BOOT CALL"/);
   assert.match(app, /label: "RESEED IMPL"/);
+  assert.match(app, /label: "DRBG_SETUP"/);
+  assert.match(app, /label: "DRBG SEED"/);
+  assert.match(app, /label: "TRNG CHECKS"/);
   assert.doesNotMatch(app, /label: "IMPLEMENTATION"/);
   assert.match(app, /https:\/\/github\.com\/Coldcard\/firmware/);
   assert.match(app, /https:\/\/github\.com\/switck\/libngu/);

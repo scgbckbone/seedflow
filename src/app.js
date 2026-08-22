@@ -12,7 +12,9 @@ const SOURCE = Object.freeze({
   rngBoardHook: "https://github.com/Coldcard/firmware/blob/master/stm32/COLDCARD_MK4/mpconfigboard.h#L83-L84",
   micropythonInit: "https://github.com/Coldcard/micropython/blob/4107246f8a080807b62c3b4838e71e812ea68b6f/ports/stm32/main.c#L395",
   trngBackend: "https://github.com/switck/libngu/blob/master/ngu/random_backend.h#L26-L41",
-  randomBytes: "https://github.com/switck/libngu/blob/master/ngu/random.c#L20-L93",
+  randomBytes: "https://github.com/switck/libngu/blob/master/ngu/random.c#L73-L93",
+  randomChecks: "https://github.com/switck/libngu/blob/master/ngu/random.c#L20-L39",
+  drbgSeed: "https://github.com/switck/libngu/blob/master/ngu/random.c#L41-L60",
   secureElement1: "https://github.com/Coldcard/firmware/blob/master/stm32/mk4-bootloader/ae.c#L694-L714",
   secureElement1Dispatch: "https://github.com/Coldcard/firmware/blob/master/stm32/mk4-bootloader/dispatch.c#L597-L602",
   secureElement1Call: "https://github.com/Coldcard/firmware/blob/master/shared/seed.py#L653",
@@ -24,6 +26,7 @@ const SOURCE = Object.freeze({
   runtimeReseed: "https://github.com/Coldcard/firmware/blob/master/shared/mk4.py#L39-L50",
   runtimeReseedCall: "https://github.com/Coldcard/firmware/blob/master/shared/main.py#L52-L60",
   randomReseed: "https://github.com/switck/libngu/blob/master/ngu/random.c#L159-L171",
+  drbgSetup: "https://github.com/switck/libngu/blob/master/ngu/random.c#L62-L71",
   bip39Words: "https://github.com/switck/libngu/blob/master/ngu/bip39.py#L318-L344",
   pushButton: "https://petertodd.org/2014/push-button-rng",
   masterSeedDocs: "https://coldcard.com/docs/master-seed/#create-a-new-master-seed"
@@ -95,7 +98,7 @@ const NODES = [
       "aborts generation"
     ],
     expressionSize: 10.1,
-    path: "libngu/ngu/random.c:20–93",
+    path: "libngu/ngu/random.c:73–93",
     tone: "process", source: SOURCE.randomBytes,
     links: [
       {
@@ -105,6 +108,10 @@ const NODES = [
       {
         label: "TRNG ADAPTER", width: 90, href: SOURCE.trngBackend,
         kind: "SOURCE", path: "libngu/ngu/random_backend.h:26–41"
+      },
+      {
+        label: "TRNG CHECKS", width: 82, href: SOURCE.randomChecks,
+        kind: "SOURCE", path: "libngu/ngu/random.c:20–39"
       }
     ]
   },
@@ -157,6 +164,14 @@ const NODES = [
       {
         label: "RESEED IMPL", width: 90, href: SOURCE.randomReseed,
         kind: "SOURCE", path: "libngu/ngu/random.c:159–171"
+      },
+      {
+        label: "DRBG_SETUP", width: 82, href: SOURCE.drbgSetup,
+        kind: "SOURCE", path: "libngu/ngu/random.c:62–71"
+      },
+      {
+        label: "DRBG SEED", width: 76, href: SOURCE.drbgSeed,
+        kind: "SOURCE", path: "libngu/ngu/random.c:41–60"
       }
     ]
   },
