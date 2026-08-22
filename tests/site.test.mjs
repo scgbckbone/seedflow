@@ -22,6 +22,7 @@ test("page is self-contained and accessible without external scripts", async () 
   assert.match(html, /^<!doctype html>/i);
   assert.match(html, /class="graph-viewport"/);
   assert.match(html, /class="identity-bar"/);
+  assert.match(html, /class="identity-brand"\s+src="coldcard-logo\.svg"/);
   assert.match(html, /<h1>Seed Generation<\/h1>/);
   assert.match(html, /MK4 \/ MK5 ≥ 5\.6\.1/);
   assert.match(html, /Q ≥ 1\.5\.1Q/);
@@ -179,7 +180,7 @@ test("build emits the complete Pages artifact", async () => {
     stdio: "pipe"
   });
 
-  for (const name of ["index.html", "styles.css", "app.js", "favicon.svg", "build.json"]) {
+  for (const name of ["index.html", "styles.css", "app.js", "favicon.svg", "coldcard-logo.svg", "build.json"]) {
     const info = await stat(path.join(root, "dist", name));
     assert.ok(info.isFile(), `${name} was not emitted`);
   }
