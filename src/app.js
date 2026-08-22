@@ -111,7 +111,7 @@ const NODES = [
   {
     id: "se1", x: 25, y: 560, w: 270, h: 110,
     title: "Secure Element 1",
-    expression: ["Fresh entropy for", "master-seed generation"],
+    expression: ["32 bytes of fresh entropy for", "master-seed generation"],
     path: "firmware/ae.c:694–714",
     tone: "hardware", source: SOURCE.secureElement1,
     links: [
@@ -128,7 +128,7 @@ const NODES = [
   {
     id: "se2", x: 25, y: 685, w: 270, h: 110,
     title: "Secure Element 2",
-    expression: ["Fresh entropy for", "master-seed generation"],
+    expression: ["8 bytes of fresh entropy for", "master-seed generation"],
     path: "firmware/se2.c:1331–1347",
     tone: "hardware", source: SOURCE.secureElement2,
     links: [
@@ -145,10 +145,7 @@ const NODES = [
   {
     id: "runtimeReseed", x: 800, y: 90, w: 365, h: 145,
     title: "SE entropy → Hash_DRBG reseed",
-    expression: [
-      "Hash_DRBG.Reseed(SHA256d(SE1[32] ||",
-      "                         SE2[8]))"
-    ],
+    expression: "Hash_DRBG.Reseed(SHA256d(SE1[32] || SE2[8]))",
     expressionSize: 10.1,
     path: "firmware/shared/mk4.py:39–50",
     tone: "process", source: SOURCE.runtimeReseed,
@@ -166,7 +163,7 @@ const NODES = [
   {
     id: "se1Reseed", x: 475, y: 40, w: 270, h: 110,
     title: "Secure Element 1",
-    expression: "Fresh startup entropy",
+    expression: "32 bytes of startup entropy",
     path: "firmware/ae.c:694–714",
     tone: "hardware", source: SOURCE.secureElement1,
     links: [
@@ -183,7 +180,7 @@ const NODES = [
   {
     id: "se2Reseed", x: 475, y: 175, w: 270, h: 110,
     title: "Secure Element 2",
-    expression: "Fresh startup entropy",
+    expression: "8 bytes of startup entropy",
     path: "firmware/se2.c:1331–1347",
     tone: "hardware", source: SOURCE.secureElement2,
     links: [
@@ -202,8 +199,8 @@ const NODES = [
     title: "device_entropy[32]",
     expression: [
       "SHA256d(mcu_random[32] ||",
-      "        SE1[32] ||",
-      "        SE2[8])"
+      "         SE1[32] ||",
+      "         SE2[8])"
     ],
     path: "firmware/shared/seed.py:646–659",
     tone: "process", source: SOURCE.deviceEntropy
@@ -264,7 +261,8 @@ const NODES = [
     id: "mix", x: 900, y: 535, w: 320, h: 145,
     title: "seed_entropy[32]",
     expression: [
-      "SHA256d(b'CC\\x01S' || purpose ||",
+      "SHA256d(b'CC\\x01S' ||",
+      "        purpose ||",
       "        selected method ||",
       "        device_entropy[32] ||",
       "        selected digest[32])"

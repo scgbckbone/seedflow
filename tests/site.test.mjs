@@ -43,13 +43,15 @@ test("graph exposes the technical construction", async () => {
     "A failed, zero or repeated TRNG word",
     "aborts generation",
     "SE entropy → Hash_DRBG reseed",
-    "Hash_DRBG.Reseed(SHA256d(SE1[32] ||",
-    "SE2[8]))",
+    "Hash_DRBG.Reseed(SHA256d(SE1[32] || SE2[8]))",
     "STARTUP RNG INITIALIZATION",
     "SEED GENERATION",
     "Secure Element 1",
     "Secure Element 2",
-    "Fresh startup entropy",
+    "32 bytes of startup entropy",
+    "8 bytes of startup entropy",
+    "32 bytes of fresh entropy for",
+    "8 bytes of fresh entropy for",
     "master-seed generation",
     "mcu_random[32] ||",
     "≥65 presses; raw timing before debounce",
@@ -66,7 +68,8 @@ test("graph exposes the technical construction", async () => {
     "ASCII results...)",
     "Reject face >30% or side >65%",
     "selected method ||",
-    "b'CC\\\\x01S' || purpose ||",
+    "b'CC\\\\x01S' ||",
+    "purpose ||",
     "device_entropy[32] ||",
     "selected digest[32])",
     "BIP39 mnemonic",
@@ -76,6 +79,8 @@ test("graph exposes the technical construction", async () => {
   }
 
   assert.doesNotMatch(app, /^\s+"(?:Hash_DRBG\.Reseed|SHA256d|digest\[32\] = SHA256)\(",$/m);
+  assert.match(app, /"SHA256d\(b'CC\\\\x01S' \|\|",\n\s+" {8}purpose \|\|"/);
+  assert.match(app, /"SHA256d\(mcu_random\[32\] \|\|",\n\s+" {9}SE1\[32\] \|\|",\n\s+" {9}SE2\[8\]\)"/);
 });
 
 test("nodes link to source while edges remain purely visual", async () => {
