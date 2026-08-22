@@ -13,6 +13,7 @@ const SOURCE = Object.freeze({
   micropythonInit: "https://github.com/Coldcard/micropython/blob/4107246f8a080807b62c3b4838e71e812ea68b6f/ports/stm32/main.c#L395",
   trngBackend: "https://github.com/switck/libngu/blob/master/ngu/random_backend.h#L26-L41",
   randomBytes: "https://github.com/switck/libngu/blob/master/ngu/random.c#L73-L93",
+  randomBytesSeedCall: "https://github.com/Coldcard/firmware/blob/master/shared/seed.py#L650",
   randomChecks: "https://github.com/switck/libngu/blob/master/ngu/random.c#L20-L39",
   drbgSeed: "https://github.com/switck/libngu/blob/master/ngu/random.c#L41-L60",
   secureElement1: "https://github.com/Coldcard/firmware/blob/master/stm32/mk4-bootloader/ae.c#L694-L714",
@@ -98,15 +99,19 @@ const NODES = [
     tone: "process", source: SOURCE.randomBytes,
     links: [
       {
-        label: "RNG_GET IMPL", width: 90, href: SOURCE.rngHardware,
+        label: "SEED CALL", width: 60, href: SOURCE.randomBytesSeedCall,
+        kind: "SOURCE", path: "firmware/shared/seed.py:650"
+      },
+      {
+        label: "RNG_GET IMPL", width: 72, href: SOURCE.rngHardware,
         kind: "SOURCE", path: "firmware/rng.c:105–167"
       },
       {
-        label: "TRNG ADAPTER", width: 90, href: SOURCE.trngBackend,
+        label: "TRNG ADAPTER", width: 74, href: SOURCE.trngBackend,
         kind: "SOURCE", path: "libngu/ngu/random_backend.h:26–41"
       },
       {
-        label: "TRNG CHECKS", width: 82, href: SOURCE.randomChecks,
+        label: "TRNG CHECKS", width: 68, href: SOURCE.randomChecks,
         kind: "SOURCE", path: "libngu/ngu/random.c:20–39"
       }
     ]
@@ -305,9 +310,6 @@ const EDGES = [
 ];
 
 const graph = document.querySelector("#seed-graph");
-const sourcePeek = document.querySelector("#source-peek");
-const sourceKind = document.querySelector("#source-kind");
-const sourcePath = document.querySelector("#source-path");
 const nodeMap = new Map(NODES.map((node) => [node.id, node]));
 
 function svgElement(name, attributes = {}) {
@@ -316,12 +318,6 @@ function svgElement(name, attributes = {}) {
     element.setAttribute(key, String(value));
   }
   return element;
-}
-
-function setSourcePeek(kind, path, href) {
-  sourceKind.textContent = kind;
-  sourcePath.textContent = path;
-  sourcePeek.href = href;
 }
 
 function anchor(node, port) {
@@ -459,8 +455,6 @@ function renderNode(node) {
   });
   link.append(expression);
 
-  link.addEventListener("pointerenter", () => setSourcePeek("NODE", node.path, node.source));
-  link.addEventListener("focus", () => setSourcePeek("NODE", node.path, node.source));
   graph.append(link);
 
   if (node.links) renderNodeLinks(node);
@@ -495,8 +489,6 @@ function renderNodeLinks(node) {
     });
     text.textContent = item.label;
     link.append(text);
-    link.addEventListener("pointerenter", () => setSourcePeek(item.kind, item.path, item.href));
-    link.addEventListener("focus", () => setSourcePeek(item.kind, item.path, item.href));
     graph.append(link);
     x += item.width + gap;
   });

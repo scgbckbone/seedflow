@@ -32,10 +32,11 @@ test("page is self-contained and accessible without external scripts", async () 
   assert.match(html, /<noscript>/);
   assert.doesNotMatch(html, /<script[^>]+src=["']https?:/i);
   assert.doesNotMatch(html, /class="(?:hero|site-header|formula-section|site-footer)"/);
-  assert.ok(
-    html.indexOf('id="source-peek"') < html.indexOf('<main'),
-    "source preview should be part of the identity header"
-  );
+  assert.match(header, /class="security-advisory"/);
+  assert.match(header, /https:\/\/coldcard\.com\/security\/status/);
+  assert.match(header, /SECURITY ADVISORY/);
+  assert.match(header, /Existing affected seeds require migration/);
+  assert.doesNotMatch(html, /id="source-peek"|id="source-kind"|id="source-path"/);
   assert.doesNotMatch(header, /Seed Generation|Unofficial|Source-linked technical map/);
 });
 
@@ -151,6 +152,7 @@ test("nodes link to source while edges remain purely visual", async () => {
   assert.match(app, /se2\.c#L1331-L1347/);
   assert.match(app, /shared\/seed\.py#L653/);
   assert.match(app, /shared\/seed\.py#L654/);
+  assert.match(app, /shared\/seed\.py#L650/);
   assert.match(app, /shared\/mk4\.py#L39-L50/);
   assert.match(app, /shared\/mk4\.py#L43/);
   assert.match(app, /shared\/mk4\.py#L44/);
@@ -173,7 +175,7 @@ test("nodes link to source while edges remain purely visual", async () => {
   assert.match(app, /label: "MPY INIT"/);
   assert.equal((app.match(/label: "RNG_GET IMPL"/g) || []).length, 1);
   assert.match(app, /label: "TRNG ADAPTER"/);
-  assert.match(app, /label: "SEED CALL"/);
+  assert.equal((app.match(/label: "SEED CALL"/g) || []).length, 3);
   assert.match(app, /label: "RESEED CALL"/);
   assert.match(app, /label: "BOOT CALL"/);
   assert.match(app, /label: "RESEED IMPL"/);
@@ -181,6 +183,7 @@ test("nodes link to source while edges remain purely visual", async () => {
   assert.match(app, /label: "DRBG SEED"/);
   assert.match(app, /label: "TRNG CHECKS"/);
   assert.doesNotMatch(app, /label: "IMPLEMENTATION"/);
+  assert.doesNotMatch(app, /setSourcePeek|sourcePeek|sourceKind|sourcePath/);
   assert.match(app, /https:\/\/github\.com\/Coldcard\/firmware/);
   assert.match(app, /https:\/\/github\.com\/switck\/libngu/);
 });

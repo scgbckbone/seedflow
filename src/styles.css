@@ -133,7 +133,6 @@ body {
   background-size: 42px 42px;
 }
 
-.source-peek,
 .noscript-source {
   display: flex;
   gap: 10px;
@@ -151,34 +150,64 @@ body {
   transition: border-color 120ms ease, color 120ms ease;
 }
 
-.source-peek {
+.security-advisory {
+  display: flex;
   width: 100%;
   min-width: 0;
-  max-width: 390px;
+  max-width: 420px;
+  min-height: 56px;
+  gap: 16px;
+  align-items: center;
+  justify-content: space-between;
   justify-self: end;
+  padding: 9px 14px;
+  border: 1px solid #ff4d4d;
+  border-radius: 8px;
+  color: #fff;
+  background: var(--coldcard-red);
+  box-shadow: 0 12px 35px rgb(0 0 0 / 42%);
+  font-family: var(--mono);
+  text-decoration: none;
+  transition: background-color 120ms ease, border-color 120ms ease;
 }
 
-.source-peek:hover,
-.source-peek:focus-visible,
+.security-advisory-copy {
+  display: grid;
+  min-width: 0;
+  gap: 3px;
+}
+
+.security-advisory strong {
+  font-size: 0.67rem;
+  letter-spacing: 0.12em;
+}
+
+.security-advisory-copy > span {
+  overflow: hidden;
+  font-size: 0.68rem;
+  font-weight: 650;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.security-advisory-arrow {
+  flex: none;
+  font-size: 1.15rem;
+  font-weight: 800;
+}
+
+.security-advisory:hover,
+.security-advisory:focus-visible {
+  border-color: #fff;
+  background: #f01818;
+  outline: none;
+}
+
 .noscript-source:hover,
 .noscript-source:focus-visible {
   border-color: var(--yellow);
   color: var(--yellow-soft);
   outline: none;
-}
-
-.source-peek > span:first-child {
-  color: var(--yellow);
-  letter-spacing: 0.12em;
-}
-
-.source-peek code {
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  font-family: inherit;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 .flow-node,
@@ -314,13 +343,8 @@ body {
     grid-template-columns: minmax(0, 1fr);
   }
 
-  .source-peek {
-    position: fixed;
-    z-index: 30;
-    right: 16px;
-    bottom: 14px;
-    width: auto;
-    max-width: calc(100vw - 32px);
+  .security-advisory {
+    max-width: none;
   }
 }
 
@@ -358,15 +382,14 @@ body {
     height: 720px;
   }
 
-  .source-peek {
-    right: 9px;
-    bottom: 9px;
-    max-width: calc(100vw - 18px);
-    font-size: 0.59rem;
+  .security-advisory {
+    min-height: 44px;
+    padding: 7px 10px;
   }
 
-  .source-peek > span:first-child {
-    display: none;
+  .security-advisory strong,
+  .security-advisory-copy > span {
+    font-size: 0.57rem;
   }
 }
 
