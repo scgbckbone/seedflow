@@ -43,20 +43,16 @@ const TONES = Object.freeze({
 
 const LANES = [
   {
-    label: "STARTUP RNG INITIALIZATION",
+    label: "STARTUP TRNG INITIALIZATION",
     x: 15, y: 7, w: 270, h: 26,
     lineX: 285, lineY: 20,
-    bandY: 0, bandH: 330, variant: "runtime",
-    source: SOURCE.runtimeReseedCall,
-    path: "firmware/shared/main.py:52–60"
+    bandY: 0, bandH: 330, variant: "runtime"
   },
   {
     label: "SEED GENERATION",
     x: 15, y: 317, w: 165, h: 26,
     lineX: 180, lineY: 330,
-    bandY: 330, bandH: 570, variant: "generation",
-    source: SOURCE.seedMix,
-    path: "firmware/shared/seed.py:792–837"
+    bandY: 330, bandH: 570, variant: "generation"
   }
 ];
 
@@ -375,26 +371,16 @@ function renderDefinitions() {
 }
 
 function renderLane(lane) {
-  const link = svgElement("a", {
-    href: lane.source,
-    target: "_blank",
-    rel: "noreferrer",
-    class: "lane-link",
-    tabindex: "0",
-    "aria-label": `${lane.label}: open implementation source`
-  });
-  const title = svgElement("title");
-  title.textContent = `${lane.label} · ${lane.path}`;
-  link.append(title);
-  link.append(svgElement("rect", {
+  const group = svgElement("g", { class: "lane-heading" });
+  group.append(svgElement("rect", {
     x: 0, y: lane.bandY, width: 1600, height: lane.bandH,
     class: `lane-band lane-band-${lane.variant}`
   }));
-  link.append(svgElement("rect", {
+  group.append(svgElement("rect", {
     x: lane.x, y: lane.y, width: lane.w, height: lane.h, rx: 6,
     class: "lane-header"
   }));
-  link.append(svgElement("line", {
+  group.append(svgElement("line", {
     x1: lane.lineX, y1: lane.lineY, x2: 1575, y2: lane.lineY,
     class: "lane-divider"
   }));
@@ -402,10 +388,8 @@ function renderLane(lane) {
     x: lane.x + 12, y: lane.y + 18, class: "lane-label"
   });
   label.textContent = lane.label;
-  link.append(label);
-  link.addEventListener("pointerenter", () => setSourcePeek("LIFECYCLE", lane.path, lane.source));
-  link.addEventListener("focus", () => setSourcePeek("LIFECYCLE", lane.path, lane.source));
-  graph.append(link);
+  group.append(label);
+  graph.append(group);
 }
 
 function renderEdge(edge) {

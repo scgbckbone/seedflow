@@ -18,15 +18,15 @@ test("client JavaScript parses", () => {
 
 test("page is self-contained and accessible without external scripts", async () => {
   const html = await readSource("index.html");
+  const header = html.slice(html.indexOf('<header'), html.indexOf('</header>'));
 
   assert.match(html, /^<!doctype html>/i);
   assert.match(html, /class="graph-viewport"/);
   assert.match(html, /class="identity-bar"/);
   assert.match(html, /class="identity-brand"\s+src="coldcard-logo\.svg"/);
-  assert.match(html, /<h1>Seed Generation<\/h1>/);
+  assert.match(html, /<h1 class="visually-hidden">COLDCARD Seed Generation<\/h1>/);
   assert.match(html, /MK4 \/ MK5 ≥ 5\.6\.1/);
   assert.match(html, /Q ≥ 1\.5\.1Q/);
-  assert.match(html, /Unofficial/);
   assert.match(html, /id="seed-graph"/);
   assert.match(html, /aria-labelledby="graph-title graph-description"/);
   assert.match(html, /<noscript>/);
@@ -36,6 +36,7 @@ test("page is self-contained and accessible without external scripts", async () 
     html.indexOf('id="source-peek"') < html.indexOf('<main'),
     "source preview should be part of the identity header"
   );
+  assert.doesNotMatch(header, /Seed Generation|Unofficial|Source-linked technical map/);
 });
 
 test("graph exposes the technical construction", async () => {
@@ -54,7 +55,7 @@ test("graph exposes the technical construction", async () => {
     "aborts generation",
     "SE entropy → Hash_DRBG reseed",
     "Hash_DRBG.Reseed(SHA256d(SE1[32] || SE2[8]))",
-    "STARTUP RNG INITIALIZATION",
+    "STARTUP TRNG INITIALIZATION",
     "SEED GENERATION",
     "Secure Element 1",
     "Secure Element 2",
@@ -95,6 +96,7 @@ test("graph exposes the technical construction", async () => {
 
 test("nodes link to source while edges remain purely visual", async () => {
   const app = await readSource("app.js");
+  const laneBlock = app.slice(app.indexOf("const LANES"), app.indexOf("const NODES"));
   const nodeBlock = app.slice(app.indexOf("const NODES"), app.indexOf("const EDGES"));
   const edgeBlock = app.slice(app.indexOf("const EDGES"), app.indexOf("const graph"));
   const mixBlock = nodeBlock.slice(nodeBlock.indexOf('id: "mix"'), nodeBlock.indexOf('id: "words"'));
@@ -134,7 +136,9 @@ test("nodes link to source while edges remain purely visual", async () => {
   assert.doesNotMatch(nodeBlock, /source:\s*SOURCE\.pushButton/);
   assert.match(app, /href: node\.source/);
   assert.doesNotMatch(app, /href: edge\.source/);
-  assert.match(app, /href: lane\.source/);
+  assert.doesNotMatch(laneBlock, /\bsource:|\bpath:/);
+  assert.doesNotMatch(app, /href: lane\.source|class: "lane-link"/);
+  assert.match(app, /class: "lane-heading"/);
   assert.match(app, /class: "edge-group"/);
   assert.doesNotMatch(app, /class: "edge-link/);
   assert.doesNotMatch(app, /class: "edge-label"/);
